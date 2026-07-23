@@ -36,7 +36,7 @@ function syncStaticAssetsToDist(distDir) {
     fs.copyFileSync(src, dest);
   };
 
-  ['admin.html', 'admin.css', 'admin.js', 'vercel.json',
+  ['vercel.json',
    'demolition.gif', 'interior.gif', 'structure_demolition.gif', 'logo.jpg'].forEach(f => {
     copyIfNewer(path.join(PUBLIC_DIR, f), path.join(distDir, f));
   });

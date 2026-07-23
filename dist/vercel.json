@@ -4,7 +4,6 @@
   "trailingSlash": false,
   "rewrites": [
     { "source": "/", "destination": "/index.html" },
-    { "source": "/interior", "destination": "/interior.html" },
-    { "source": "/admin", "destination": "/admin.html" }
+    { "source": "/interior", "destination": "/interior.html" }
   ]
 }
