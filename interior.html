@@ -1,0 +1,1381 @@
+<!doctype html>
+<html lang="ko" data-theme="light" style="--accent: #D97706;"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>원스톱 인테리어 — 공간의 가치를 다시 짓다</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" rel="stylesheet">
+
+<script>// ---- Tweakable defaults ----
+window.TWEAKS = /*EDITMODE-BEGIN*/{
+  "brandName": "원스톱 철거 인테리어",
+  "phone": "1533-6968",
+  "accent": "#D97706",
+  "interiorAccent": "#D97706",
+  "dark": false,
+  "googleSheetUrl": "https://docs.google.com/spreadsheets/d/10JE5X_vOkixaxp0b5yaqz7atXy3xhf_zdo77ncHabSU/edit?gid=0#gid=0",
+  "googleScriptUrl": "https://script.google.com/macros/s/AKfycbzddLHE6DZn2ANwS6ajHrGGZ-kmfUSYLR9ZQLDkFNqw_7qwBr559_U0tJEDBmp3HpKLuQ/exec",
+  "gateDemoUrl": "https://http2026.cafe24.com/",
+  "gateInteriorUrl": "interior.html",
+  "gateDemoLabel": "철거",
+  "gateDemoDesc": "상가 원상복구, 사무실 인테리어 철거, 부분 철거까지 — 최저가 철거 견적을 받아보세요.",
+  "gateInteriorLabel": "인테리어",
+  "gateInteriorDesc": "상가 · 사무실 · 주거 — 설계부터 시공까지. 포트폴리오와 견적을 확인하세요.",
+  "heroVariant": "A",
+  "heroHeadline": "철거부터 인테리어 완공까지,\n단 1개 팀으로 100% 원스톱",
+  "heroSub": "복잡한 견적, 여러 업체 컨택은 이제 그만. 상담 한 번으로 철거·설계·시공·AS까지 한 팀이 책임집니다.",
+  "costTitle": "숨은 비용 없는 투명 견적.",
+  "costLead": "공간 유형과 평수에 따라 예상 비용대가 다릅니다. 아래는 참고용 시작가이며, 정확한 견적은 무료 현장 실측 후 안내드립니다.",
+  "costPrices": [
+    "평당 80만원부터",
+    "평당 60만원부터",
+    "평당 120만원부터",
+    "평당 15만원부터"
+  ],
+  "contactTitle": "지금 무료 현장 방문 실측을 신청하세요",
+  "contactSub": "신청 후 1일이내 전문 담당 매니저가 직접 연락드립니다.",
+  "footerCompany": "(주)동준산업",
+  "footerInfo": "사업자등록번호: 707-87-03813 | 대표: 김동언 | 보령시 보령북로 107"
+}/*EDITMODE-END*/;</script>
+
+<style>
+  :root{
+    --bg: #FBFAF7;
+    --bg-elev: #ffffff;
+    --ink: #14110F;
+    --ink-2: #2A2724;
+    --muted: #6B6560;
+    --line: #E8E4DE;
+    --line-2: #D9D3CB;
+    --accent: #F59E0B;
+    --accent-ink: #000000;
+    --chip: #F2EEE7;
+    --radius: 14px;
+    --radius-lg: 22px;
+    --shadow-md: 0 8px 30px rgba(20,17,15,.08);
+    --container: 1240px;
+    --font: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  }
+  html[data-theme="dark"]{
+    --bg: #14110F; --bg-elev: #1C1917; --ink: #F7F5F1; --ink-2: #E4DFD8;
+    --muted: #9E978F; --line: #2A2724; --line-2: #3A3632; --chip: #23201D;
+  }
+  *{ box-sizing: border-box;}
+  html, body{ margin:0; padding:0; background: var(--bg); color: var(--ink); font-family: var(--font); -webkit-font-smoothing: antialiased;}
+  body{ font-size: 16px; line-height: 1.55; letter-spacing: -0.01em;}
+  img, svg{ display:block; max-width:100%;}
+  a{ color: inherit; text-decoration:none;}
+  button{ font-family: inherit; cursor: pointer; border:none; background:none; color: inherit;}
+  input, textarea, select{ font-family: inherit;}
+  .container{ max-width: var(--container); margin:0 auto; padding: 0 24px;}
+
+  /* --------- NAV --------- */
+  .nav{
+    position: sticky; top: 0; z-index: 40;
+    backdrop-filter: saturate(1.4) blur(14px);
+    background: color-mix(in oklab, var(--bg) 78%, transparent);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-inner{ display:flex; align-items:center; justify-content:space-between; height: 68px;}
+  .brand{ display:flex; align-items:center; gap:10px; font-weight: 800; font-size: 20px; letter-spacing: -0.03em;}
+  .brand-mark{
+    width: 28px; height: 28px; border-radius: 8px; background: var(--accent); color: #fff;
+    display:grid; place-items:center; font-weight: 900; font-size: 14px;
+  }
+  .brand-sub{ color: var(--muted); font-weight: 600; font-size: 13px; margin-left: 6px;}
+  .nav-links{ display:flex; gap: 30px; font-size: 15px; color: var(--ink-2); font-weight: 500;}
+  .nav-links a:hover{ color: var(--accent);}
+  .nav-cta{ display:flex; align-items:center; gap: 14px;}
+  .nav-phone{ font-weight: 800; font-size: 17px; letter-spacing: -0.02em;}
+  .nav-phone small{ display:block; color: var(--muted); font-weight: 500; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;}
+  .btn{
+    display:inline-flex; align-items:center; gap: 8px; padding: 12px 20px; border-radius: 999px;
+    font-weight: 700; font-size: 15px; letter-spacing: -0.01em;
+    transition: transform .12s, background .2s, color .2s, border-color .2s;
+    border: 1px solid transparent;
+  }
+  .btn:hover{ transform: translateY(-1px);}
+  .btn.primary{ background: var(--accent); color: #fff;}
+  .btn.primary:hover{ background: color-mix(in oklab, var(--accent) 88%, black);}
+  .btn.ink{ background: var(--ink); color: var(--bg);}
+  .btn.ghost{ background: transparent; color: var(--ink); border-color: var(--line-2);}
+  .btn.ghost:hover{ border-color: var(--ink);}
+  .btn.lg{ padding: 16px 26px; font-size: 16px;}
+  .btn .arr{ transition: transform .2s;}
+  .btn:hover .arr{ transform: translateX(3px);}
+  .back-link{
+    display:inline-flex; align-items:center; gap: 6px; color: var(--muted);
+    font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 999px;
+    background: var(--chip);
+  }
+  .back-link:hover{ color: var(--ink);}
+
+  /* --------- HERO --------- */
+  .hero{ padding: 40px 0 20px; position: relative;}
+  .hero-eyebrow{
+    display:inline-flex; align-items:center; gap:10px;
+    padding: 8px 14px; border-radius: 999px;
+    background: var(--chip); color: var(--ink-2);
+    font-size: 13px; font-weight: 600;
+  }
+  .hero-eyebrow .dot{ width:8px; height:8px; border-radius:50%; background: var(--accent);
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 18%, transparent);}
+  .hero h1{
+    font-size: clamp(48px, 7.2vw, 112px); font-weight: 900;
+    letter-spacing: -0.05em; line-height: 0.94; margin: 24px 0 0;
+  }
+  .hero h1 .serif{
+    font-family: "Playfair Display", "Noto Serif KR", ui-serif, Georgia, serif;
+    font-style: italic; font-weight: 500;
+  }
+  .hero h1 .em{ color: var(--accent);}
+  .hero .sub{ margin-top: 26px; font-size: 19px; color: var(--muted); max-width: 620px;}
+  .hero .cta-row{ display:flex; gap: 12px; margin-top: 32px; flex-wrap: wrap;}
+
+  .hero-strip{
+    margin-top: 60px;
+    display:grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px;
+    aspect-ratio: 21/9;
+  }
+  .hero-strip > div{ border-radius: var(--radius-lg); overflow: hidden; position: relative;}
+  .hero-strip .tag{
+    position:absolute; left: 16px; bottom: 16px; z-index: 2;
+    padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700;
+    background: rgba(20,17,15,.72); color: #fff; letter-spacing: 0.06em;
+    backdrop-filter: blur(8px);
+  }
+  .hero-strip .side{ display:grid; grid-template-rows: 1fr 1fr; gap: 16px;}
+  .hero-strip .side > div{ border-radius: var(--radius-lg); overflow: hidden; position: relative;}
+
+  /* --------- Category strip --------- */
+  .cat-strip{
+    border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    background: var(--bg-elev); margin-top: 80px;
+  }
+  .cat-inner{
+    display:grid; grid-template-columns: repeat(4, 1fr); padding: 26px 0;
+  }
+  .cat-item{
+    display:flex; flex-direction: column; gap: 6px; padding: 6px 24px;
+    border-right: 1px solid var(--line);
+  }
+  .cat-item:last-child{ border-right: none;}
+  .cat-item .lbl{ font-size: 12px; color: var(--muted); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;}
+  .cat-item .val{ font-size: 22px; font-weight: 800; letter-spacing: -0.02em;}
+  .cat-item .val .em{ color: var(--accent);}
+
+  /* --------- Section common --------- */
+  section.block{ padding: 110px 0;}
+  .sec-eyebrow{
+    display:inline-block; font-size: 13px; font-weight: 700; color: var(--accent);
+    letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 16px;
+  }
+  .sec-title{
+    font-size: clamp(34px, 3.6vw, 52px); font-weight: 900; letter-spacing: -0.035em;
+    line-height: 1.08; margin: 0 0 18px;
+  }
+  .sec-title .em{ color: var(--accent);}
+  .sec-title .serif{ font-family: "Playfair Display", "Noto Serif KR", ui-serif, Georgia, serif; font-style: italic; font-weight: 500;}
+  .sec-lead{ font-size: 18px; color: var(--muted); max-width: 620px;}
+
+  /* --------- Style Gallery (Bento) --------- */
+  .style-grid{
+    display:grid; grid-template-columns: repeat(6, 1fr); grid-auto-rows: 200px;
+    gap: 16px; margin-top: 60px;
+  }
+  .style-card{
+    position: relative; border-radius: var(--radius-lg); overflow: hidden;
+    background: var(--chip); cursor: pointer;
+    transition: transform .3s ease;
+  }
+  .style-card:hover{ transform: translateY(-4px);}
+  .style-card .ph{ position:absolute; inset: 0;}
+  .style-card .cover{
+    position:absolute; left:0; right:0; bottom:0; padding: 22px 24px 20px;
+    background: linear-gradient(180deg, transparent, rgba(0,0,0,.78));
+    color: #fff; z-index: 2;
+  }
+  .style-card .kw{ font-size: 11px; letter-spacing: 0.16em; font-weight: 700; opacity: .85;}
+  .style-card h3{ font-size: 24px; font-weight: 800; letter-spacing: -0.02em; margin: 4px 0 4px;}
+  .style-card p{ font-size: 13px; opacity: .82; margin: 0; max-width: 90%;}
+  .style-card .arrow{
+    position:absolute; top: 20px; right: 20px; z-index: 2;
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(255,255,255,.12); backdrop-filter: blur(10px); color: #fff;
+    display:grid; place-items:center; border: 1px solid rgba(255,255,255,.22);
+    transition: background .2s ease, transform .3s ease;
+  }
+  .style-card:hover .arrow{ background: var(--accent); transform: rotate(-20deg);}
+
+  .style-card.s1{ grid-column: span 3; grid-row: span 2;}
+  .style-card.s2{ grid-column: span 3; grid-row: span 1;}
+  .style-card.s3{ grid-column: span 2; grid-row: span 1;}
+  .style-card.s4{ grid-column: span 1; grid-row: span 1;}
+  .style-card.s5{ grid-column: span 3; grid-row: span 2;}
+  .style-card.s6{ grid-column: span 3; grid-row: span 1;}
+
+  /* --------- Space categories --------- */
+  .spaces{ background: var(--bg-elev); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);}
+  .space-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 60px;}
+  .space-card{
+    position: relative; overflow: hidden; border-radius: var(--radius-lg);
+    aspect-ratio: 3/4; background: var(--chip); cursor: pointer;
+    transition: transform .3s ease;
+  }
+  .space-card:hover{ transform: translateY(-4px);}
+  .space-card .ph{ position:absolute; inset:0;}
+  .space-card::after{
+    content:""; position:absolute; inset:0;
+    background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,.75));
+    z-index: 1;
+  }
+  .space-card .info{
+    position:absolute; left:0; right:0; bottom:0; padding: 30px; color: #fff; z-index: 2;
+  }
+  .space-card .idx{ font-size: 12px; font-weight: 800; letter-spacing: 0.14em; opacity: .82;}
+  .space-card h3{
+    font-size: 34px; font-weight: 900; letter-spacing: -0.03em; margin: 10px 0 12px; line-height: 1;
+  }
+  .space-card p{ font-size: 14px; margin: 0 0 20px; opacity: .82; max-width: 240px; line-height: 1.55;}
+  .space-card .biz-list{ list-style: none; padding: 0; margin: 0; display:flex; flex-wrap: wrap; gap: 6px;}
+  .space-card .biz-list li{
+    padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,.14);
+    backdrop-filter: blur(8px); font-size: 12px; font-weight: 600;
+  }
+
+  /* --------- Design Process --------- */
+  .dp-head{ display:flex; align-items:flex-end; justify-content:space-between; gap: 30px; flex-wrap: wrap;}
+  .dp-grid{
+    margin-top: 60px; display:grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+    counter-reset: dpc;
+  }
+  .dp-card{
+    position: relative; padding: 28px 24px 24px;
+    background: var(--bg-elev); border: 1px solid var(--line); border-radius: var(--radius);
+    display:flex; flex-direction: column; gap: 14px;
+    min-height: 220px;
+  }
+  .dp-card::before{
+    counter-increment: dpc; content: "0" counter(dpc);
+    font-size: 14px; font-weight: 900; color: var(--accent); letter-spacing: 0.08em;
+  }
+  .dp-card h4{ font-size: 18px; font-weight: 800; letter-spacing: -0.02em; margin: 0;}
+  .dp-card p{ color: var(--muted); font-size: 14px; margin: 0; line-height: 1.55;}
+  .dp-card .dur{
+    margin-top: auto; font-size: 12px; color: var(--ink-2); font-weight: 700;
+    padding: 4px 10px; border-radius: 999px; background: var(--chip); align-self: flex-start;
+  }
+  .dp-card.hi{ background: var(--ink); color: var(--bg); border-color: var(--ink);}
+  .dp-card.hi p{ color: color-mix(in oklab, var(--bg) 70%, var(--ink));}
+  .dp-card.hi .dur{ background: color-mix(in oklab, var(--bg) 14%, transparent); color: var(--bg);}
+
+  /* --------- Materials --------- */
+  .mat-wrap{ display:grid; grid-template-columns: 1fr 1.2fr; gap: 60px; align-items: start; margin-top: 40px;}
+  .mat-list{ display:flex; flex-direction: column;}
+  .mat-item{
+    display:grid; grid-template-columns: 60px 1fr 100px; gap: 20px; align-items: center;
+    padding: 22px 0; border-top: 1px solid var(--line); cursor: pointer;
+    transition: padding-left .2s;
+  }
+  .mat-item:hover{ padding-left: 12px;}
+  .mat-item:last-child{ border-bottom: 1px solid var(--line);}
+  .mat-item .idx{ font-size: 13px; color: var(--muted); font-weight: 700; letter-spacing: 0.06em;}
+  .mat-item .name{ font-size: 22px; font-weight: 800; letter-spacing: -0.02em;}
+  .mat-item .name small{ display:block; color: var(--muted); font-weight: 500; font-size: 13px; margin-top: 4px; letter-spacing: 0;}
+  .mat-item .swatch{
+    width: 60px; height: 60px; border-radius: 50%; justify-self: end;
+    border: 1px solid var(--line-2);
+  }
+
+  /* --------- CTA banner --------- */
+  .cta-band{
+    background: var(--ink); color: var(--bg); padding: 100px 0; position: relative; overflow: hidden;
+  }
+  .cta-band::before{
+    content:""; position:absolute; right: -100px; top: -100px;
+    width: 500px; height: 500px; border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in oklab, var(--accent) 40%, transparent) 0%, transparent 70%);
+  }
+  .cta-inner{ position: relative; display:grid; grid-template-columns: 1.4fr 1fr; gap: 60px; align-items: center;}
+  .cta-inner h2{
+    font-size: clamp(38px, 4.6vw, 68px); font-weight: 900; letter-spacing: -0.04em; line-height: 1.02;
+    margin: 0 0 20px; color: var(--bg);
+  }
+  .cta-inner h2 .em{ color: color-mix(in oklab, var(--accent) 100%, white 10%);}
+  .cta-inner h2 .serif{ font-family:"Playfair Display","Noto Serif KR",ui-serif,Georgia,serif; font-style:italic; font-weight: 500;}
+  .cta-inner p{ color: color-mix(in oklab, var(--bg) 70%, var(--ink)); font-size: 17px; max-width: 520px;}
+  .cta-side{
+    padding: 30px; border: 1px solid color-mix(in oklab, var(--bg) 16%, transparent); border-radius: var(--radius-lg);
+    background: color-mix(in oklab, var(--bg) 4%, transparent);
+  }
+  .cta-side .lbl{ font-size: 12px; color: color-mix(in oklab, var(--bg) 60%, var(--ink)); letter-spacing: 0.14em; font-weight: 700; text-transform: uppercase;}
+  .cta-side .num{ font-size: clamp(36px, 4vw, 48px); font-weight: 900; letter-spacing: -0.03em; margin: 8px 0 6px;}
+  .cta-side .hours{ font-size: 13px; color: color-mix(in oklab, var(--bg) 65%, var(--ink));}
+  .cta-side .divider{ height: 1px; background: color-mix(in oklab, var(--bg) 16%, transparent); margin: 22px 0;}
+
+  /* --------- Contact form --------- */
+  .form-block{ padding: 100px 0;}
+  .form-grid-wrap{ display:grid; grid-template-columns: 1fr 1.2fr; gap: 80px; align-items: start;}
+  .form-card{
+    background: var(--bg-elev); border: 1px solid var(--line); border-radius: var(--radius-lg);
+    padding: 40px;
+  }
+  .form-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 18px;}
+  .field{ display:flex; flex-direction: column; gap: 8px;}
+  .field.full{ grid-column: span 2;}
+  .field label{ font-size: 13px; font-weight: 700; color: var(--ink-2);}
+  .field label .req{ color: var(--accent);}
+  .field input, .field select, .field textarea{
+    padding: 14px 16px; border: 1px solid var(--line-2); border-radius: 10px;
+    background: var(--bg); color: var(--ink); font-size: 15px; outline: none;
+    transition: border-color .2s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{ border-color: var(--ink);}
+  .field textarea{ resize: vertical; min-height: 110px;}
+  .radio-row{ display:flex; gap: 8px; flex-wrap: wrap;}
+  .radio-row label{
+    padding: 10px 16px; border: 1px solid var(--line-2); border-radius: 999px;
+    font-size: 14px; font-weight: 600; cursor: pointer; transition: all .15s;
+    color: var(--ink-2);
+  }
+  .radio-row input{ display:none;}
+  .radio-row label:has(input:checked){ background: var(--ink); color: var(--bg); border-color: var(--ink);}
+  .agree{ display:flex; align-items:center; gap: 10px; font-size: 13px; color: var(--muted); margin-top: 6px;}
+  .agree input{ accent-color: var(--accent);}
+  .form-submit{ margin-top: 26px; width: 100%; justify-content: center; padding: 18px; font-size: 16px;}
+
+  /* --------- Footer --------- */
+  footer{ padding: 60px 0 40px; border-top: 1px solid var(--line);}
+  .foot-grid{ display:grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 40px;}
+  .foot-brand{ font-size: 22px; font-weight: 900; letter-spacing: -0.03em;}
+  .foot-desc{ color: var(--muted); font-size: 14px; margin-top: 14px; max-width: 320px; line-height: 1.7;}
+  .foot-h{ font-size: 13px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px;}
+  .foot-list{ list-style: none; padding: 0; margin: 0; display:flex; flex-direction: column; gap: 10px; font-size: 14px; color: var(--muted);}
+  .foot-list a:hover{ color: var(--accent);}
+  .foot-bottom{
+    margin-top: 50px; padding-top: 22px; border-top: 1px solid var(--line);
+    display:flex; justify-content: space-between; font-size: 12px; color: var(--muted); flex-wrap: wrap; gap: 10px;
+  }
+
+  /* --------- Floating call --------- */
+  .float-call{
+    position: fixed; right: 22px; bottom: 22px; z-index: 30;
+    display:flex; align-items:center; gap: 10px; padding: 14px 18px; border-radius: 999px;
+    background: var(--accent); color: #fff; font-weight: 800; font-size: 15px;
+    box-shadow: 0 10px 30px rgba(226,75,35,.35);
+  }
+
+  /* --------- Placeholder --------- */
+  .ph{ background: repeating-linear-gradient(45deg, #E6DFD3 0 12px, #EEE8DC 12px 24px); position:relative;}
+  .ph::after{
+    content: attr(data-label); position:absolute; inset:0; display:grid; place-items:center;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: #7a6f5b;
+    letter-spacing: 0.05em;
+  }
+  .ph.dark{ background: repeating-linear-gradient(45deg, #2a251d 0 12px, #332d24 12px 24px);}
+  .ph.dark::after{ color: #b8ab92;}
+  .ph.warm{ background: repeating-linear-gradient(45deg, #d5c4a8 0 12px, #ddcbaf 12px 24px);}
+  .ph.warm::after{ color: #6b573a;}
+  .ph.cool{ background: repeating-linear-gradient(45deg, #cfd6da 0 12px, #d8dee2 12px 24px);}
+  .ph.cool::after{ color: #4a5661;}
+  .ph.dark2{ background: repeating-linear-gradient(45deg, #1a1815 0 12px, #232019 12px 24px);}
+  .ph.dark2::after{ color: #a09482;}
+
+  /* --------- Tweaks --------- */
+  #tweaks{
+    position: fixed; right: 22px; top: 88px; z-index: 60; width: 300px;
+    background: var(--bg-elev); border: 1px solid var(--line); border-radius: 16px;
+    box-shadow: var(--shadow-md); overflow: hidden; display:none;
+  }
+  #tweaks.on{ display:block;}
+  .tw-h{ padding: 14px 16px; border-bottom: 1px solid var(--line); display:flex; justify-content:space-between; align-items:center;}
+  .tw-h h4{ margin:0; font-size: 14px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;}
+  .tw-h button{ font-size: 20px; color: var(--muted); line-height: 1;}
+  .tw-body{ padding: 16px; display:flex; flex-direction: column; gap: 18px; max-height: 70vh; overflow: auto;}
+  .tw-group label{ font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; display:block; margin-bottom: 8px;}
+  .tw-swatches{ display:flex; gap: 8px;}
+  .tw-sw{ width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--line-2); cursor:pointer; padding:0;}
+  .tw-sw.on{ border-color: var(--ink); transform: scale(1.08);}
+  .tw-input{ width:100%; padding: 10px 12px; border: 1px solid var(--line-2); border-radius: 8px; background: var(--bg); color: var(--ink); font-size: 13px; font-family: inherit;}
+  .tw-toggle{ display:flex; align-items:center; gap: 10px; font-size: 13px; color: var(--ink-2);}
+  .tw-toggle input{ accent-color: var(--accent);}
+
+  /* ---------------- Dedicated Ultra-Optimized Mobile Responsive System ---------------- */
+  html, body {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  @media (max-width: 768px) {
+    .container { padding-left: 18px !important; padding-right: 18px !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; }
+    .block { padding: 40px 0 !important; }
+    .hero { padding: 40px 0 30px !important; }
+    
+    /* Typography Scaling */
+    h1, .hero h1 { font-size: clamp(26px, 6.5vw, 36px) !important; line-height: 1.25 !important; letter-spacing: -0.035em !important; word-break: keep-all !important; overflow-wrap: break-word !important; }
+    h2, .sec-title { font-size: clamp(22px, 5.5vw, 30px) !important; line-height: 1.25 !important; letter-spacing: -0.03em !important; word-break: keep-all !important; }
+    h3 { font-size: 20px !important; line-height: 1.3 !important; }
+    .sub, .sec-lead { font-size: 14.5px !important; line-height: 1.6 !important; word-break: keep-all !important; }
+
+    /* CTA Row & Buttons Full Width */
+    .cta-row { flex-direction: column !important; width: 100% !important; gap: 10px !important; }
+    .cta-row .btn { width: 100% !important; justify-content: center !important; text-align: center !important; padding: 14px 18px !important; font-size: 15px !important; box-sizing: border-box !important; }
+    
+    /* Navigation Bar */
+    .nav-inner { padding: 12px 18px !important; }
+    .brand span { font-size: 15px !important; }
+    .nav-links { display: none !important; }
+    .nav-cta { gap: 8px !important; }
+    .nav-phone { display: none !important; }
+    .nav-cta .btn { padding: 8px 14px !important; font-size: 12.5px !important; }
+
+    /* Grids to Single Column */
+    .space-grid, .style-grid, .dp-grid, .cat-inner { grid-template-columns: 1fr !important; gap: 16px !important; }
+    .hero-strip { grid-template-columns: 1fr !important; gap: 12px !important; }
+    .hero-strip .side { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+    
+    /* Cards & Forms */
+    .space-card, .luxury-style-card, .form-card { padding: 20px 18px !important; border-radius: 14px !important; }
+    .form-grid, .form-grid-wrap { grid-template-columns: 1fr !important; gap: 14px !important; }
+    .field.full { grid-column: span 1 !important; }
+
+    /* Footer & Floating Call Button */
+    .foot-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
+    .foot-bottom { flex-direction: column !important; gap: 8px !important; text-align: center !important; }
+    .float-call { right: 16px !important; bottom: 16px !important; padding: 12px 16px !important; font-size: 13.5px !important; }
+  }
+
+  @media (max-width: 480px) {
+    .container { padding-left: 14px !important; padding-right: 14px !important; }
+    h1, .hero h1 { font-size: 24px !important; }
+    h2, .sec-title { font-size: 20px !important; }
+  }
+</style>
+<style id="grabbit-visited-styles">
+        .grabbit-visited,
+        .grabbit-visited:link,
+        .grabbit-visited:visited {
+            color: #551A8B !important; /* Standard visited link purple */
+        }
+    </style><style type="text/css">.resize-observer[data-v-8859cc6c]{position:absolute;top:0;left:0;z-index:-1;width:100%;height:100%;border:none;background-color:transparent;pointer-events:none;display:block;overflow:hidden;opacity:0}.resize-observer[data-v-8859cc6c] object{display:block;position:absolute;top:0;left:0;height:100%;width:100%;overflow:hidden;pointer-events:none;z-index:-1}</style><style type="text/css">.resize-observer[data-v-8859cc6c]{position:absolute;top:0;left:0;z-index:-1;width:100%;height:100%;border:none;background-color:transparent;pointer-events:none;display:block;overflow:hidden;opacity:0}.resize-observer[data-v-8859cc6c] object{display:block;position:absolute;top:0;left:0;height:100%;width:100%;overflow:hidden;pointer-events:none;z-index:-1}</style></head>
+<body>
+
+<!-- ================== NAV ================== -->
+<!-- ================== TOP LIVE TRUST TICKER ================== -->
+<div style="background:linear-gradient(90deg, #0F172A 0%, #064E3B 100%); color:#FFF; font-size:12.5px; font-weight:700; border-bottom:1px solid rgba(16,185,129,0.25); padding:8.5px 0; text-align:center; position:relative; z-index:1001;">
+  <div class="container" style="display:flex; align-items:center; justify-content:center; gap:16px; flex-wrap:wrap;">
+    <span style="display:inline-flex; align-items:center; gap:6px; color:#10B981;">
+      <span style="width:8px; height:8px; border-radius:50%; background:#10B981; box-shadow:0 0 10px #10B981;"></span>
+      🎨 인하우스 전문 디자이너 15명 1:1 맞춤 설계 상담 제공
+    </span>
+    <span style="color:rgba(255,255,255,0.3);">|</span>
+    <span>⚡ 상가 · 주거 · 사무실 시공 1,500건+ 실적 보장</span>
+    <span style="color:rgba(255,255,255,0.3);">|</span>
+    <span style="color:var(--accent); font-weight:800;">🔒 실측 후 계약서 명시 · 별도 변경·추가요소 외 추가 청구 없음</span>
+  </div>
+</div>
+
+<header class="nav">
+  <div class="container nav-inner">
+    <a href="index.html" class="brand" style="display:flex; align-items:center; gap:10px;">
+      <img src="design_handoff_onestop_landing/로고.jpeg" alt="원스톱 철거 인테리어 로고" style="height:38px; width:auto; border-radius:6px; object-fit:contain;">
+      <span data-bind="brandName">원스톱 철거 인테리어</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#portfolio">시공 사례</a>
+      <a href="#style-picker">스타일 선택</a>
+      <a href="#spaces">공간별 시공 (주택/아파트/상가)</a>
+      <a href="#process">시공 공정</a>
+      <a href="#contact">견적문의</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="index.html" class="back-link">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        메인
+      </a>
+      <div class="nav-phone">
+        <small>상담 · 견적</small>
+        <span data-bind="phone">1533-6968</span>
+      </div>
+      <a href="#contact" class="btn primary">무료 견적받기 <span class="arr">→</span></a>
+    </div>
+  </div>
+</header>
+
+<!-- ================== HERO ================== -->
+<section id="top" class="hero">
+  <div class="container">
+    <span class="hero-eyebrow"><span class="dot"></span>주택 · 아파트 · 상가 · 사무실 맞춤 인테리어</span>
+    <h1>공간의 가치를<br>
+      <span class="serif">다시</span> <span class="em">짓다.</span>
+    </h1>
+    <p class="sub">단순한 시공이 아닙니다. 아파트 리모델링, 주택, 상가, 오피스 맞춤 도면 설계부터 정밀 직영 시공, 1년 무상 A/S까지 원스톱으로 해결해 드립니다.</p>
+    <div class="cta-row">
+      <a href="#contact" class="btn primary lg">무료 디자인 상담 <span class="arr">→</span></a>
+      <a href="#style-picker" class="btn ghost lg">인테리어 스타일 고르기</a>
+    </div>
+
+    <div class="hero-strip">
+      <div class="main" style="position:relative; overflow:hidden; border:2px solid var(--accent); border-radius:var(--radius-lg); box-shadow: 0 20px 45px -10px color-mix(in oklab, var(--accent) 35%, transparent);">
+        <video autoplay="" loop="" muted="" playsinline="" style="width:100%; height:100%; object-fit:cover; border-radius:var(--radius-lg); filter:contrast(1.05) brightness(1.02);">
+          <source src="design_handoff_onestop_landing/로고동영상.mp4" type="video/mp4">
+        </video>
+        <span class="tag" style="position:absolute; bottom:14px; left:14px; background:var(--accent); color:var(--accent-ink); font-size:11px; font-weight:900; padding:4px 12px; border-radius:99px;">🎬 OFFICIAL BRAND MOTION</span>
+      </div>
+      <div class="side">
+        <div><div class="ph warm" style="width:100%; height:100%; border-radius:12px; overflow:hidden; background:#000;"><img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&amp;fit=crop&amp;w=600&amp;q=80" alt="warm 우드 인테리어" style="width:100%; height:100%; object-fit:cover;"></div></div>
+        <div><div class="ph cool" style="width:100%; height:100%; border-radius:12px; overflow:hidden; background:#000;"><img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&amp;fit=crop&amp;w=600&amp;q=80" alt="modern 미니멀 인테리어" style="width:100%; height:100%; object-fit:cover;"></div></div>
+      </div>
+      <div class="side">
+        <div><div class="ph dark" style="width:100%; height:100%; border-radius:12px; overflow:hidden; background:#000;"><img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&amp;fit=crop&amp;w=600&amp;q=80" alt="dark 무드 카페 인테리어" style="width:100%; height:100%; object-fit:cover;"></div></div>
+        <div><div class="ph" style="width:100%; height:100%; border-radius:12px; overflow:hidden; background:#000;"><img src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&amp;fit=crop&amp;w=600&amp;q=80" alt="오피스 시공 인테리어" style="width:100%; height:100%; object-fit:cover;"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================== Category strip ================== -->
+<div class="cat-strip">
+  <div class="container">
+    <div class="cat-inner">
+      <div class="cat-item">
+        <span class="lbl">Total Projects</span>
+        <span class="val">1,500<span class="em">+</span></span>
+      </div>
+      <div class="cat-item">
+        <span class="lbl">Avg. Satisfaction</span>
+        <span class="val">4.9 <span style="font-size:14px; color:var(--muted); font-weight:600;">/ 5.0</span></span>
+      </div>
+      <div class="cat-item">
+        <span class="lbl">Design Team</span>
+        <span class="val">15<span style="font-size:14px; color:var(--muted); font-weight:600;">명 인하우스</span></span>
+      </div>
+      <div class="cat-item">
+        <span class="lbl">AS Warranty</span>
+        <span class="val">1<span style="font-size:14px; color:var(--muted); font-weight:600;">년 무상 보증</span></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================== Spaces (CORE BUSINESS PRIMARY TOP SECTION) ================== -->
+<section class="block spaces" id="spaces">
+  <div class="container">
+    <div style="max-width:760px;">
+      <span class="sec-eyebrow">Core Business Solutions</span>
+      <h2 class="sec-title">상가 · 아파트/주택 · 사무실<br><span class="em">공간별 맞춤 전문 인테리어</span>.</h2>
+      <p class="sec-lead">상가 원상복구 및 카페·식당·뷰티샵 인테리어부터 아파트·주택 리모델링, 오피스 맞춤 시공까지 — 정밀 설계부터 직영 시공, 1년 무상 A/S까지 한 팀이 끝까지 책임집니다.</p>
+    </div>
+
+    <div class="space-grid" style="margin-top:36px;">
+      <div class="space-card" style="transform-style: preserve-3d; transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s; transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px);">
+        <div class="ph warm" style="width:100%; height:220px; border-radius:14px; overflow:hidden; background:#000;">
+          <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&amp;fit=crop&amp;w=800&amp;q=80" alt="상가 매장 인테리어 시공 사진" style="width:100%; height:100%; object-fit:cover;">
+        </div>
+        <div class="info" style="margin-top:14px;">
+          <div class="idx">SPACE · 01</div>
+          <h3>상가 · 매장 인테리어</h3>
+          <p>매출을 만드는 공간. 동선·조명·브랜딩부터 철거 원상복구까지 통합 설계.</p>
+          <ul class="biz-list">
+            <li>카페</li><li>음식점</li><li>미용실</li><li>편집숍</li><li>학원</li>
+          </ul>
+        </div>
+      </div>
+      <div class="space-card" style="transform-style: preserve-3d; transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s; transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px);">
+        <div class="ph cool" style="width:100%; height:220px; border-radius:14px; overflow:hidden; background:#000;">
+          <img src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&amp;fit=crop&amp;w=800&amp;q=80" alt="주거 아파트 인테리어 시공 사진" style="width:100%; height:100%; object-fit:cover;">
+        </div>
+        <div class="info" style="margin-top:14px;">
+          <div class="idx">SPACE · 02</div>
+          <h3>주거 · 아파트 리모델링</h3>
+          <p>매일의 삶이 담기는 공간, 취향과 실용의 균형을 담은 정밀 직영 시공.</p>
+          <ul class="biz-list">
+            <li>아파트</li><li>빌라</li><li>단독주택</li><li>신혼집</li>
+          </ul>
+        </div>
+      </div>
+      <div class="space-card" style="transform-style: preserve-3d; transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s; transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px);">
+        <div class="ph dark" style="width:100%; height:220px; border-radius:14px; overflow:hidden; background:#000;">
+          <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&amp;fit=crop&amp;w=800&amp;q=80" alt="사무실 오피스 인테리어 시공 사진" style="width:100%; height:100%; object-fit:cover;">
+        </div>
+        <div class="info" style="margin-top:14px;">
+          <div class="idx">SPACE · 03</div>
+          <h3>사무실 · 오피스</h3>
+          <p>업무 효율과 기업 브랜딩이 공존하는 스마트 오피스 시공.</p>
+          <ul class="biz-list">
+            <li>스타트업</li><li>병의원</li><li>공유오피스</li><li>사무공간</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================== Portfolio (실제 시공 사례) ================== -->
+<section class="block" id="portfolio" style="position:relative; overflow:hidden;">
+  <div style="position:absolute; inset:0; z-index:0; pointer-events:none; opacity:0.14; mix-blend-mode:luminosity;">
+    <img src="design_handoff_onestop_landing/인테리어.gif" alt="인테리어 디자인 모션 배경" style="width:100%; height:100%; object-fit:cover; filter:contrast(1.1) brightness(0.9);">
+  </div>
+  <div class="container" style="position:relative; z-index:1;">
+    <div style="max-width:720px;">
+      <span class="sec-eyebrow">Portfolio</span>
+      <h2 class="sec-title">말이 아닌<br><span class="em">결과로 증명</span>하는 시공 사례.</h2>
+      <p class="sec-lead">상가 · 주거 · 오피스 전 영역, 원스톱이 직접 완공한 프로젝트를 확인해 보세요.</p>
+    </div>
+
+    <div class="style-grid">
+      <div class="style-card s1" style="transform-style: preserve-3d; transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s; transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px);">
+        <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&amp;fit=crop&amp;w=900&amp;q=80" alt="상가 카페 인테리어 시공 사례" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover;">
+        <div class="arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M7 17L17 7M9 7h8v8"></path></svg></div>
+        <div class="cover">
+          <div class="kw">CASE · 01 · 상가</div>
+          <h3>감성 브런치 카페</h3>
+          <p>32평 · 전체 리모델링</p>
+        </div>
+      </div>
+      <div class="style-card s2" style="transform-style: preserve-3d; transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s; transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px);">
+        <img src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&amp;fit=crop&amp;w=900&amp;q=80" alt="아파트 리모델링 시공 사례" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover;">
+        <div class="arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M7 17L17 7M9 7h8v8"></path></svg></div>
+        <div class="cover">
+          <div class="kw">CASE · 02 · 주거</div>
+          <h3>아늑한 아파트 리모델링</h3>
+          <p>42평 · 전체 리모델링</p>
+        </div>
+      </div>
+      <div class="style-card s3" style="transform-style: preserve-3d; transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s; transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px);">
+        <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&amp;fit=crop&amp;w=900&amp;q=80" alt="스타트업 오피스 인테리어 시공 사례" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover;">
+        <div class="arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M7 17L17 7M9 7h8v8"></path></svg></div>
+        <div class="cover">
+          <div class="kw">CASE · 03 · 오피스</div>
+          <h3>강남 스타트업 오피스</h3>
+          <p>80평 · 신규 시공</p>
+        </div>
+      </div>
+      <div class="style-card s4" style="transform-style: preserve-3d; transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s;">
+        <img src="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&amp;fit=crop&amp;w=900&amp;q=80" alt="헤어 살롱 인테리어 시공 사례" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover;">
+        <div class="arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M7 17L17 7M9 7h8v8"></path></svg></div>
+        <div class="cover">
+          <div class="kw">CASE · 04 · 상가</div>
+          <h3>프리미엄 헤어 살롱</h3>
+          <p>22평 · 부분 리모델링</p>
+        </div>
+      </div>
+      <div class="style-card s5" style="transform-style: preserve-3d; transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s; transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px);">
+        <img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&amp;fit=crop&amp;w=900&amp;q=80" alt="단독주택 인테리어 시공 사례" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover;">
+        <div class="arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M7 17L17 7M9 7h8v8"></path></svg></div>
+        <div class="cover">
+          <div class="kw">CASE · 05 · 주거</div>
+          <h3>내추럴 우드 단독주택</h3>
+          <p>62평 · 전체 리모델링</p>
+        </div>
+      </div>
+      <div class="style-card s6" style="transform-style: preserve-3d; transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s; transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px);">
+        <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&amp;fit=crop&amp;w=900&amp;q=80" alt="로프트 스튜디오 인테리어 시공 사례" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover;">
+        <div class="arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M7 17L17 7M9 7h8v8"></path></svg></div>
+        <div class="cover">
+          <div class="kw">CASE · 06 · 상가</div>
+          <h3>빈티지 로프트 스튜디오</h3>
+          <p>25평 · 신규 시공</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================== Design Process ================== -->
+<section class="block" id="process" style="position:relative; overflow:hidden;">
+  <div style="position:absolute; inset:0; z-index:0; pointer-events:none; opacity:0.14; mix-blend-mode:luminosity;">
+    <img src="design_handoff_onestop_landing/구축물철거.gif" alt="구축물 철거 모션 배경" style="width:100%; height:100%; object-fit:cover; filter:contrast(1.1) brightness(0.9);">
+  </div>
+  <div class="container" style="position:relative; z-index:1;">
+    <div class="dp-head">
+      <div style="max-width:640px;">
+        <span class="sec-eyebrow">Design Process</span>
+        <h2 class="sec-title"><span class="em">4단계</span>로 완성되는<br>인테리어 설계·시공.</h2>
+        <p class="sec-lead">상담부터 설계 확정, 자재 큐레이션, 시공, 완공 후 관리까지 — 한 창구에서 담당 디자이너가 끝까지 함께합니다.</p>
+      </div>
+      <a href="#contact" class="btn ink">지금 상담 신청 <span class="arr">→</span></a>
+    </div>
+
+    <div class="dp-grid">
+      <div class="dp-card">
+        <h4>디자인 상담</h4>
+        <p>공간의 목적, 브랜드 방향성, 예산과 취향을 폭넓게 청취합니다.</p>
+        <span class="dur">Day 1</span>
+      </div>
+      <div class="dp-card hi">
+        <h4>현장 실측 · 설계 확정</h4>
+        <p>정확한 치수·구조·설비 상태를 확인하고, 자재·마감까지 담은 상세 견적과 설계안을 확정합니다.</p>
+        <span class="dur">Day 2 – 5</span>
+      </div>
+      <div class="dp-card">
+        <h4>시공 · 진행 공유</h4>
+        <p>철거·목공·전기·마감까지 직영 시공, 매일 진행 상황을 공유합니다.</p>
+        <span class="dur">Week 1 – 6</span>
+      </div>
+      <div class="dp-card">
+        <h4>완공 · 1년 AS</h4>
+        <p>체크리스트 기반 검수 후 1년 무상 AS로 완공 이후까지 책임집니다.</p>
+        <span class="dur">완공 후</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================== Style Picker (대체 구현) ================== -->
+<section class="block" id="style-picker" style="background:var(--bg-elev); border-top:1px solid var(--line); border-bottom:1px solid var(--line);">
+  <div class="container">
+    <div style="max-width:720px;">
+      <span class="sec-eyebrow">Style Selector</span>
+      <h2 class="sec-title">나에게 딱 맞는 <span class="em">인테리어 스타일</span> 고르기</h2>
+      <p class="sec-lead">주택, 아파트, 상가, 오피스 — 원하시는 감성의 스타일을 선택하시면 맞춤 견적과 상세 설계안을 무료로 받아보실 수 있습니다.</p>
+    </div>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; margin-top:40px;">
+      <!-- Style 1: Modern Minimal -->
+      <div class="luxury-style-card" style="background:var(--bg-elev); border:1px solid var(--line-2); border-radius:18px; padding:22px; transition:all 0.35s cubic-bezier(0.16, 1, 0.3, 1); display:flex; flex-direction:column; overflow:hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.15);">
+        <div class="ph" style="border-radius:14px; overflow:hidden; aspect-ratio:16/10; margin-bottom:18px; background:#000;">
+          <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&amp;fit=crop&amp;w=800&amp;q=80" alt="모던 미니멀 시공 사진 샘플" style="width:100%; height:100%; object-fit:cover; transition:transform 0.5s ease;">
+        </div>
+        <div style="font-size:11px; font-weight:900; color:var(--accent); letter-spacing:0.12em; text-transform:uppercase;">STYLE 01 · MODERN MINIMAL</div>
+        <h3 style="font-size:22px; font-weight:900; margin:8px 0 8px;">🌿 모던 미니멀</h3>
+        <p style="font-size:13.5px; color:var(--muted); line-height:1.6; margin-bottom:18px;">여백과 절제된 라인, 무몰딩·라인조명 중심의 현대적인 프리미엄 주거 및 오피스 디자인.</p>
+        <a href="#contact" class="btn primary" style="font-size:13px; padding:10px 16px; margin-top:auto; text-align:center; font-weight:800;">이 스타일로 무료 상담 신청 →</a>
+      </div>
+
+      <!-- Style 2: Natural Warm Wood -->
+      <div class="luxury-style-card" style="background:var(--bg-elev); border:1px solid var(--line-2); border-radius:18px; padding:22px; transition:all 0.35s cubic-bezier(0.16, 1, 0.3, 1); display:flex; flex-direction:column; overflow:hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.15);">
+        <div class="ph" style="border-radius:14px; overflow:hidden; aspect-ratio:16/10; margin-bottom:18px; background:#000;">
+          <img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&amp;fit=crop&amp;w=800&amp;q=80" alt="내추럴 웜 우드 시공 사진 샘플" style="width:100%; height:100%; object-fit:cover; transition:transform 0.5s ease;">
+        </div>
+        <div style="font-size:11px; font-weight:900; color:var(--accent); letter-spacing:0.12em; text-transform:uppercase;">STYLE 02 · NATURAL WOOD</div>
+        <h3 style="font-size:22px; font-weight:900; margin:8px 0 8px;">🪵 내추럴 웜 우드</h3>
+        <p style="font-size:13.5px; color:var(--muted); line-height:1.6; margin-bottom:18px;">따뜻한 최고급 원목 톤과 은은한 채광이 조화를 이루는 아늑한 아파트·단독주택 디자인.</p>
+        <a href="#contact" class="btn primary" style="font-size:13px; padding:10px 16px; margin-top:auto; text-align:center; font-weight:800;">이 스타일로 무료 상담 신청 →</a>
+      </div>
+
+      <!-- Style 3: Classic Luxury (고급 펜트하우스 인테리어 사진으로 교체!) -->
+      <div class="luxury-style-card" style="background:var(--bg-elev); border:2px solid var(--accent); border-radius:18px; padding:22px; transition:all 0.35s cubic-bezier(0.16, 1, 0.3, 1); display:flex; flex-direction:column; overflow:hidden; box-shadow: 0 15px 35px -5px color-mix(in oklab, var(--accent) 30%, transparent); position:relative;">
+        <span style="position:absolute; top:16px; right:16px; background:var(--accent); color:var(--accent-ink); font-size:10px; font-weight:900; padding:3px 10px; border-radius:99px; letter-spacing:0.05em;">SIGNATURE LUXURY</span>
+        <div class="ph" style="border-radius:14px; overflow:hidden; aspect-ratio:16/10; margin-bottom:18px; background:#000;">
+          <img src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&amp;fit=crop&amp;w=800&amp;q=80" alt="클래식 럭셔리 펜트하우스 시공 사진 샘플" style="width:100%; height:100%; object-fit:cover; transition:transform 0.5s ease;">
+        </div>
+        <div style="font-size:11px; font-weight:900; color:var(--accent); letter-spacing:0.12em; text-transform:uppercase;">STYLE 03 · CLASSIC LUXURY</div>
+        <h3 style="font-size:22px; font-weight:900; margin:8px 0 8px;">🏛️ 클래식 럭셔리</h3>
+        <p style="font-size:13.5px; color:var(--muted); line-height:1.6; margin-bottom:18px;">높은 층고와 천연 대리석, 웨인스코팅, 브라스 샹들리에 포인트의 펜트하우스 &amp; 상가 수석 스타일.</p>
+        <a href="#contact" class="btn primary" style="font-size:13px; padding:10px 16px; margin-top:auto; text-align:center; font-weight:800;">이 스타일로 무료 상담 신청 →</a>
+      </div>
+
+      <!-- Style 4: Vintage Industrial Loft -->
+      <div class="luxury-style-card" style="background:var(--bg-elev); border:1px solid var(--line-2); border-radius:18px; padding:22px; transition:all 0.35s cubic-bezier(0.16, 1, 0.3, 1); display:flex; flex-direction:column; overflow:hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.15);">
+        <div class="ph" style="border-radius:14px; overflow:hidden; aspect-ratio:16/10; margin-bottom:18px; background:#000;">
+          <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&amp;fit=crop&amp;w=800&amp;q=80" alt="빈티지 아티스틱 로프트 시공 사진 샘플" style="width:100%; height:100%; object-fit:cover; transition:transform 0.5s ease;">
+        </div>
+        <div style="font-size:11px; font-weight:900; color:var(--accent); letter-spacing:0.12em; text-transform:uppercase;">STYLE 04 · VINTAGE LOFT</div>
+        <h3 style="font-size:22px; font-weight:900; margin:8px 0 8px;">🧱 빈티지 아티스틱</h3>
+        <p style="font-size:13.5px; color:var(--muted); line-height:1.6; margin-bottom:18px;">노출 콘크리트, 빈티지 붉은 파벽돌, 인더스트리얼 조명이 돋보이는 힙한 스튜디오·매장 디자인.</p>
+        <a href="#contact" class="btn primary" style="font-size:13px; padding:10px 16px; margin-top:auto; text-align:center; font-weight:800;">이 스타일로 무료 상담 신청 →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================== CTA Banner ================== -->
+<section class="cta-band">
+  <div class="container cta-inner">
+    <div>
+      <h2>당신의 공간,<br><span class="serif">이제</span> <span class="em">시작</span>할 시간.</h2>
+      <p>디자인 상담부터 견적까지 무료. 담당 디자이너가 30분 이내 직접 연락드립니다.</p>
+      <div class="cta-row" style="margin-top: 30px; display:flex; gap: 12px; flex-wrap: wrap;">
+        <a href="#contact" class="btn primary lg">무료 디자인 상담 <span class="arr">→</span></a>
+        <a href="tel:1533-6968" class="btn ghost lg" style="color:#fff; border-color:rgba(255,255,255,.35);">전화 상담 <span data-bind="phone" style="opacity:.75">1533-6968</span></a>
+      </div>
+    </div>
+    <div class="cta-side">
+      <div class="lbl">Direct Call</div>
+      <div class="num" data-bind="phone">1533-6968</div>
+      <div class="hours">평일·주말 09:00 – 20:00 · 연중무휴</div>
+      <div class="divider"></div>
+      <div style="display:flex; align-items:center; gap: 12px;">
+        <div style="width:36px; height:36px; border-radius:10px; background:#FEE500; color:#3B1E1E; display:grid; place-items:center; font-weight:900;">K</div>
+        <div>
+          <div style="font-weight:800; font-size:15px;">카카오톡 1:1 상담</div>
+          <div style="font-size:12px; color:color-mix(in oklab, var(--bg) 60%, var(--ink));">평균 응답 5분 이내</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================== Contact Form ================== -->
+<section class="form-block" id="contact">
+  <div class="container">
+    <div style="max-width:720px;">
+      <span class="sec-eyebrow">Design Inquiry</span>
+      <h2 class="sec-title">무료 디자인<br><span class="em">견적 상담 신청.</span></h2>
+      <p class="sec-lead">공간 정보와 원하시는 스타일을 남겨주시면, 담당 디자이너가 1일 이내 연락드립니다.</p>
+    </div>
+
+    <div class="form-grid-wrap" style="margin-top: 60px;">
+      <div>
+        <div style="border-top: 1px solid var(--line); padding-top: 20px;">
+          <div style="font-size: 12px; letter-spacing: 0.14em; color: var(--muted); font-weight: 700; text-transform: uppercase;">01 · 무엇을</div>
+          <div style="font-size: 18px; font-weight: 700; margin-top: 8px;">디자인 스타일과 공간 유형을 알려주세요.</div>
+        </div>
+        <div style="border-top: 1px solid var(--line); padding-top: 20px; margin-top: 22px;">
+          <div style="font-size: 12px; letter-spacing: 0.14em; color: var(--muted); font-weight: 700; text-transform: uppercase;">02 · 언제까지</div>
+          <div style="font-size: 18px; font-weight: 700; margin-top: 8px;">희망하시는 완공 시점이 있다면 알려주세요.</div>
+        </div>
+        <div style="border-top: 1px solid var(--line); padding-top: 20px; margin-top: 22px;">
+          <div style="font-size: 12px; letter-spacing: 0.14em; color: var(--muted); font-weight: 700; text-transform: uppercase;">03 · 예산은</div>
+          <div style="font-size: 18px; font-weight: 700; margin-top: 8px;">대략적인 예산 범위가 있으면 더 정확한 제안이 가능합니다.</div>
+        </div>
+        <div style="border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 20px 0; margin-top: 22px;">
+          <div style="font-size: 13px; color: var(--muted);">* 모든 상담과 견적은 <b style="color: var(--ink);">100% 무료</b>이며, 진행 여부는 견적 확인 후 편하게 결정하시면 됩니다.</div>
+        </div>
+      </div>
+
+      <form class="form-card" onsubmit="return handleSubmit(event)">
+        <div class="form-grid">
+          <div class="field">
+            <label>성함 <span class="req">*</span></label>
+            <input required="" name="name" placeholder="이름을 입력해 주세요">
+          </div>
+          <div class="field">
+            <label>연락처 <span class="req">*</span></label>
+            <input required="" name="phone" placeholder="010-0000-0000">
+          </div>
+          <div class="field full">
+            <label>공간 유형 <span class="req">*</span></label>
+            <div class="radio-row">
+              <label><input type="radio" name="type" value="store" checked=""><span>상가 · 매장</span></label>
+              <label><input type="radio" name="type" value="office"><span>사무실</span></label>
+              <label><input type="radio" name="type" value="home"><span>주거</span></label>
+              <label><input type="radio" name="type" value="etc"><span>기타</span></label>
+            </div>
+          </div>
+          <div class="field full">
+            <label>희망 디자인 스타일</label>
+            <div class="radio-row">
+              <label><input type="radio" name="style" value="modern"><span>Modern</span></label>
+              <label><input type="radio" name="style" value="wood"><span>Warm Wood</span></label>
+              <label><input type="radio" name="style" value="minimal"><span>Minimal</span></label>
+              <label><input type="radio" name="style" value="industrial"><span>Industrial</span></label>
+              <label><input type="radio" name="style" value="natural"><span>Natural</span></label>
+              <label><input type="radio" name="style" value="undecided" checked=""><span>미정 · 상담 요청</span></label>
+            </div>
+          </div>
+          <div class="field">
+            <label>평수 (평)</label>
+            <input name="size" placeholder="예: 30평">
+          </div>
+          <div class="field">
+            <label>희망 완공 시점</label>
+            <input name="date" placeholder="예: 3개월 이내">
+          </div>
+          <div class="field full">
+            <label>요청사항</label>
+            <textarea name="memo" placeholder="공간의 현재 상태, 원하시는 분위기, 예산 등을 자유롭게 적어주세요."></textarea>
+          </div>
+        </div>
+        <label class="agree"><input type="checkbox" required=""> 개인정보 수집 및 이용에 동의합니다 (상담 목적 외 사용되지 않음)</label>
+        <button class="btn primary form-submit" type="submit">무료 견적 신청하기 <span class="arr">→</span></button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ================== Footer ================== -->
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <div>
+        <div class="foot-brand" data-bind="brandName">원스톱 철거 인테리어</div>
+        <p class="foot-desc">철거부터 인테리어까지, 한 팀이 책임지는 원스톱 시공 서비스. 상가·사무실·주거 전 영역, 서울·경기·인천 전 지역 상시 대응합니다.</p>
+      </div>
+      <div>
+        <div class="foot-h">인테리어</div>
+        <ul class="foot-list">
+          <li><a href="#portfolio">시공 사례</a></li>
+          <li><a href="#style-picker">디자인 스타일</a></li>
+          <li><a href="#spaces">공간별 시공</a></li>
+          <li><a href="#process">디자인 프로세스</a></li>
+          <li><a href="#materials">마감재</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="foot-h">문의</div>
+        <ul class="foot-list">
+          <li><a href="tel:1533-6968" data-bind="phone">1533-6968</a></li>
+          <li>평일·주말 08:00 – 20:00</li>
+          <li>카카오톡 1:1 상담</li>
+        </ul>
+      </div>
+      <div>
+        <div class="foot-h">사업자 정보</div>
+        <ul class="foot-list">
+          <li>상호 · (주)동준산업</li>
+          <li>대표 · 김동언</li>
+          <li>사업자등록번호 · 707-87-03813</li>
+          <li>보령시 보령북로 107</li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <div>© 2026 원스톱 인테리어. All rights reserved.</div>
+      <div><a href="index.html" style="color:var(--ink); font-weight: 700;">← 메인으로 돌아가기</a></div>
+    </div>
+  </div>
+</footer>
+
+<a class="float-call" href="tel:1533-6968">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+  <span data-bind="phone">1533-6968</span> 전화 상담
+</a>
+
+<!-- ================== TWEAKS ================== -->
+<div id="tweaks">
+  <div class="tw-h"><h4>Tweaks</h4><button id="tw-close">×</button></div>
+  <div class="tw-body">
+    <div class="tw-group">
+      <label>포인트 컬러</label>
+      <div class="tw-swatches" id="tw-accent">
+        <button class="tw-sw" data-c="#E24B23" style="background:#E24B23"></button>
+        <button class="tw-sw" data-c="#111111" style="background:#111111"></button>
+        <button class="tw-sw" data-c="#2C6E4A" style="background:#2C6E4A"></button>
+        <button class="tw-sw" data-c="#1E5EFF" style="background:#1E5EFF"></button>
+      </div>
+    </div>
+    <div class="tw-group">
+      <label>브랜드명</label>
+      <input class="tw-input" id="tw-brand">
+    </div>
+    <div class="tw-group">
+      <label>대표번호</label>
+      <input class="tw-input" id="tw-phone">
+    </div>
+    <div class="tw-group">
+      <label>다크 모드</label>
+      <label class="tw-toggle"><input type="checkbox" id="tw-dark"> 다크 배경으로 전환</label>
+    </div>
+  </div>
+</div>
+
+<script>
+const T = window.TWEAKS;
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+
+function getContrastColor(hexColor) {
+  if (!hexColor || hexColor.charAt(0) !== '#') return '#FFFFFF';
+  const hex = hexColor.replace('#', '');
+  if (hex.length < 6) return '#FFFFFF';
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 145 ? '#000000' : '#FFFFFF';
+}
+
+function applyTweaks(){
+  if (T.accent) {
+    document.documentElement.style.setProperty('--accent', T.accent);
+    document.documentElement.style.setProperty('--accent-ink', getContrastColor(T.accent));
+  }
+  document.documentElement.dataset.theme = T.dark ? 'dark' : 'light';
+  $$('[data-bind="phone"]').forEach(el => el.textContent = T.phone || '1533-6968');
+  $$('[data-bind="brandName"]').forEach(el => el.textContent = T.brandName || '원스톱');
+
+  const phoneDigits = (T.phone || '1533-6968').replace(/[^0-9]/g, '');
+  $$('a[href^="tel:"]').forEach(link => {
+    link.href = 'tel:' + phoneDigits;
+  });
+
+  // Hero images binding if present
+  const imgs = window.HERO_IMAGES || {};
+  if (imgs.heroVisual) {
+    $$('.hero-strip .hero-main-img').forEach(el => {
+      el.style.backgroundImage = `url("${imgs.heroVisual}")`;
+      el.style.backgroundSize = 'cover';
+      el.style.backgroundPosition = 'center';
+    });
+  }
+}
+applyTweaks();
+
+function handleSubmit(e){
+  e.preventDefault();
+  const form = e.target;
+  const btn = form.querySelector('button[type=submit]');
+  const origBtnText = btn.innerHTML;
+
+  btn.textContent = '구글 스프레드시트로 전송 중...';
+  btn.style.background = '#2563EB';
+
+  const formData = {
+    serviceType: '인테리어',
+    name: form.name ? form.name.value : '',
+    phone: form.phone ? form.phone.value : '',
+    spaceType: form.spaceType ? form.spaceType.value : '',
+    area: form.size ? form.size.value : '',
+    startDate: form.date ? form.date.value : '',
+    message: form.memo ? form.memo.value : ''
+  };
+
+  const googleScriptUrl = (window.TWEAKS && window.TWEAKS.googleScriptUrl) || 'https://script.google.com/macros/s/AKfycbzddLHE6DZn2ANwS6ajHrGGZ-kmfUSYLR9ZQLDkFNqw_7qwBr559_U0tJEDBmp3HpKLuQ/exec';
+
+  if (googleScriptUrl && googleScriptUrl.includes('script.google.com')) {
+    fetch(googleScriptUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    }).then(() => {
+      btn.textContent = '✅ 구글 시트 저장 완료 · 30분 내 연락드립니다!';
+      btn.style.background = '#2A7D4F';
+      setTimeout(() => { form.reset(); btn.innerHTML = origBtnText; btn.style.background = ''; }, 3500);
+    }).catch(err => {
+      btn.textContent = '접수완료 · 30분 내 연락드립니다';
+      btn.style.background = '#2A7D4F';
+      setTimeout(() => { form.reset(); btn.innerHTML = origBtnText; btn.style.background = ''; }, 3500);
+    });
+  } else {
+    btn.textContent = '접수 완료! (담당 디자이너 30분 내 연락)';
+    btn.style.background = '#2A7D4F';
+    setTimeout(() => { form.reset(); btn.innerHTML = origBtnText; btn.style.background = ''; }, 3500);
+  }
+  return false;
+}
+
+// ====================== VISUAL CLICK-TO-EDIT & DIRECT PHOTO UPLOADER ======================
+(function setupVisualEditor() {
+  // 편집 모드: 항상 활성화 — 이 파일을 직접 열어 텍스트/사진을 바로 클릭 수정하는 것이 기본 작업 방식이다.
+  // 실제 배포 시에는 "🚀 배포용 HTML 다운로드" 또는 admin의 "포용 HTML 내보내기"로 편집 도구가 제거된 파일을 생성한다.
+  const style = document.createElement('style');
+  style.id = 'visual-editor-style';
+  style.textContent = `
+    [contenteditable="true"] { outline: none; transition: background 0.2s ease, outline 0.2s ease; cursor: text; }
+    [contenteditable="true"]:hover { background: color-mix(in oklab, var(--accent) 8%, transparent); border-radius: 4px; }
+    [contenteditable="true"]:focus { outline: 2px solid var(--accent); background: color-mix(in oklab, var(--accent) 12%, transparent); border-radius: 4px; }
+    img, .ph, .hero-main-img, .hero-sub-img { cursor: pointer; transition: filter 0.2s ease, transform 0.2s ease; }
+    img:hover, .ph:hover, .hero-main-img:hover { filter: brightness(1.1); transform: scale(1.005); }
+    
+    .floating-export-bar {
+      position: fixed; bottom: 24px; left: 24px; z-index: 99999;
+      display: flex; gap: 10px; align-items: center;
+      background: #1E293B; border: 1px solid #38BDF8; color: #FFF;
+      padding: 10px 18px; border-radius: 999px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-family: sans-serif;
+    }
+    .btn-visual-export {
+      background: linear-gradient(135deg, #E24B23, #EA580C); color: #FFF;
+      border: none; padding: 8px 16px; border-radius: 99px; font-weight: 800; font-size: 13px;
+      cursor: pointer; box-shadow: 0 4px 12px rgba(226, 75, 35, 0.4); transition: transform 0.2s ease;
+    }
+    .btn-visual-export:hover { transform: translateY(-2px); }
+  `;
+  document.head.appendChild(style);
+
+  const hiddenFileInput = document.createElement('input');
+  hiddenFileInput.id = 'visual-editor-file-input';
+  hiddenFileInput.type = 'file';
+  hiddenFileInput.accept = 'image/*';
+  hiddenFileInput.style.display = 'none';
+  document.body.appendChild(hiddenFileInput);
+
+  let targetImgEl = null;
+
+  // Make 100% of all text elements editable without breaking layouts
+  function makeAllTextElementsEditable() {
+    const excludeTags = ['SCRIPT', 'STYLE', 'INPUT', 'TEXTAREA', 'SELECT', 'OPTION', 'SVG', 'PATH', 'IFRAME', 'HEAD', 'META', 'LINK'];
+    const allElements = Array.from(document.body.getElementsByTagName('*'));
+    
+    allElements.forEach(el => {
+      if (excludeTags.includes(el.tagName)) return;
+      if (el.closest('.floating-export-bar') || el.closest('#json-file-input')) return;
+      
+      const hasTextNode = Array.from(el.childNodes).some(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim().length > 0);
+      // DIV는 목록에서 뺐다 — 사진+캡션을 감싸기만 하는 레이아웃 div(.style-card 등)까지
+      // "텍스트 없어도 자식 4개 이하면 편집 가능"으로 잡히는 문제를 막기 위함. DIV는 직접
+      // 텍스트가 있을 때(hasTextNode)만 아래에서 편집 가능해진다.
+      const isTextContainer = ['H1','H2','H3','H4','H5','H6','P','SPAN','A','B','STRONG','EM','SMALL','LI','LABEL','TD','TH','KBD','BUTTON'].includes(el.tagName);
+
+      if ((hasTextNode || isTextContainer) && el.children.length <= 4) {
+        if (!el.hasAttribute('contenteditable')) {
+          el.setAttribute('contenteditable', 'true');
+          el.setAttribute('title', '✏️ 클릭하여 글씨 직접 수정');
+          
+          el.addEventListener('blur', () => {
+            if (!window.TWEAKS) window.TWEAKS = {};
+            if (el.matches('[data-bind="phone"]')) window.TWEAKS.phone = el.innerText;
+            if (el.matches('[data-bind="brandName"]')) window.TWEAKS.brandName = el.innerText;
+          });
+        }
+      }
+    });
+  }
+
+  // Prevent link jumps during text editing
+  document.addEventListener('click', (e) => {
+    const target = e.target;
+    if (target && (target.getAttribute('contenteditable') === 'true' || target.closest('[contenteditable="true"]'))) {
+      const link = target.closest('a');
+      if (link && link.getAttribute('href') !== '#' && !link.getAttribute('href').startsWith('javascript:')) {
+        if (document.activeElement === target || document.activeElement === link) {
+          e.preventDefault();
+        }
+      }
+    }
+  }, true);
+
+  document.addEventListener('DOMContentLoaded', () => {
+    makeAllTextElementsEditable();
+    setTimeout(makeAllTextElementsEditable, 1000);
+
+    document.addEventListener('click', (e) => {
+      const ph = e.target.closest('img, .ph, .hero-main-img, .hero-sub-img');
+      if (ph) {
+        targetImgEl = ph;
+        hiddenFileInput.click();
+      }
+    });
+
+    hiddenFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file && targetImgEl) {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          if (targetImgEl.tagName === 'IMG') {
+            targetImgEl.src = evt.target.result;
+          } else {
+            targetImgEl.style.backgroundImage = `url("${evt.target.result}")`;
+            targetImgEl.style.backgroundSize = 'cover';
+            targetImgEl.style.backgroundPosition = 'center';
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    if (window === window.top) {
+      const bar = document.createElement('div');
+      bar.className = 'floating-export-bar';
+      bar.innerHTML = `
+        <span style="font-size:12px; font-weight:700;">✏️ 텍스트/사진 클릭하여 직접 수정 중</span>
+        <button class="btn-visual-export" id="btn-quick-save" style="background:linear-gradient(135deg, #10B981, #059669);">💾 저장하기</button>
+        <button class="btn-visual-export" id="btn-quick-export">⬇ 다운로드</button>
+        <span id="quick-save-status" style="font-size:11.5px; opacity:.85;"></span>
+      `;
+      document.body.appendChild(bar);
+
+      // 브랜드명·전화번호는 window.TWEAKS로 구동되는 필드라, 화면에서 직접 고쳐도
+      // 다음 새로고침 때 applyTweaks()가 파일에 저장된 옛 TWEAKS 값으로 덮어써 버린다.
+      // 저장 시점에 화면의 최신 값을 읽어 TWEAKS 자체를 다시 구워 넣는다.
+      function buildCleanHtml() {
+        const tweaks = Object.assign({}, window.TWEAKS || {});
+        const txt = el => (el ? el.innerText.trim() : '');
+        const brand = document.querySelector('[data-bind="brandName"]');
+        if (txt(brand)) tweaks.brandName = txt(brand);
+        const phone = document.querySelector('[data-bind="phone"]');
+        if (txt(phone)) tweaks.phone = txt(phone);
+
+        const clone = document.documentElement.cloneNode(true);
+        clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+        clone.querySelectorAll('[title]').forEach(el => {
+          const t = el.getAttribute('title') || '';
+          if (t.startsWith('✏️') || t.startsWith('클릭하여')) el.removeAttribute('title');
+        });
+        clone.querySelectorAll('#visual-editor-style, #visual-editor-file-input, #canvas3d-motion, .floating-export-bar').forEach(el => el.remove());
+
+        // 문자열 치환 대신 DOM에서 TWEAKS <script> 요소를 직접 찾아 textContent만 바꾼다.
+        const tweaksScript = Array.from(clone.querySelectorAll('head script'))
+          .find(s => s.textContent.includes('window.TWEAKS = /*EDITMODE-BEGIN*/'));
+        if (tweaksScript) {
+          tweaksScript.textContent = '// ---- Tweakable defaults ----\nwindow.TWEAKS = /*EDITMODE-BEGIN*/' + JSON.stringify(tweaks, null, 2) + '/*EDITMODE-END*/;';
+        }
+
+        return '<!doctype html>\n' + clone.outerHTML;
+      }
+
+      function downloadHtml(html, filename) {
+        const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      }
+
+      const statusEl = document.getElementById('quick-save-status');
+      const setStatus = (msg, ms) => {
+        statusEl.textContent = msg;
+        if (ms) setTimeout(() => { if (statusEl.textContent === msg) statusEl.textContent = ''; }, ms);
+      };
+
+      document.getElementById('btn-quick-save').addEventListener('click', () => {
+        const html = buildCleanHtml();
+        setStatus('저장 중...');
+        fetch('/api/save-page', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ page: 'interior.html', html })
+        }).then(r => r.json()).then(res => {
+          if (res.success) setStatus('✅ 저장 완료 · dist/ 배포 파일까지 반영됨', 3000);
+          else { setStatus('⚠️ 저장 실패 · 다운로드로 대체합니다', 3000); downloadHtml(html, 'interior.html'); }
+        }).catch(() => {
+          setStatus('⚠️ 서버 미연결 · 파일로 다운로드합니다', 3000);
+          downloadHtml(html, 'interior.html');
+        });
+      });
+
+      document.getElementById('btn-quick-export').addEventListener('click', () => {
+        downloadHtml(buildCleanHtml(), 'interior.html');
+      });
+    }
+  });
+})();
+
+function applyTweaks() {
+  const T = window.TWEAKS || {};
+  if (T.brandName) document.querySelectorAll('[data-bind="brandName"]').forEach(el => el.textContent = T.brandName);
+  if (T.phone) document.querySelectorAll('[data-bind="phone"]').forEach(el => el.textContent = T.phone);
+  if (T.accent) document.documentElement.style.setProperty('--accent', T.accent);
+  document.documentElement.dataset.theme = T.dark ? 'dark' : 'light';
+}
+
+// ====================== REALTIME ADMIN LISTENERS ======================
+window.addEventListener('message', (e)=>{
+  const d = e.data || {};
+  if (!window.TWEAKS) window.TWEAKS = {};
+  if (d.type === '__update_full_data') {
+    if (d.tweaks) Object.assign(window.TWEAKS, d.tweaks);
+    if (d.images) window.HERO_IMAGES = d.images;
+    applyTweaks();
+  }
+  if (d.type === '__edit_mode_set_keys' && d.edits) {
+    Object.assign(window.TWEAKS, d.edits);
+    applyTweaks();
+  }
+  if (d.type === '__highlight_element' && d.field) {
+    const selectorMap = {
+      brandName: '[data-bind="brandName"]',
+      phone: '[data-bind="phone"]'
+    };
+    const sel = selectorMap[d.field];
+    if (sel) {
+      const el = document.querySelector(sel);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.style.transition = 'outline 0.3s ease, box-shadow 0.3s ease';
+        el.style.outline = '3px solid #E24B23';
+        el.style.boxShadow = '0 0 20px rgba(226,75,35,0.6)';
+        setTimeout(() => {
+          el.style.outline = 'none';
+          el.style.boxShadow = 'none';
+        }, 1500);
+      }
+    }
+  }
+});
+
+document.addEventListener('click', (e) => {
+  if (window.parent && window.parent !== window) {
+    const target = e.target;
+    if (target.closest('[data-bind="brandName"]')) window.parent.postMessage({ type: '__element_clicked', field: 'brandName', tab: 'tab-brand' }, '*');
+    else if (target.closest('[data-bind="phone"]')) window.parent.postMessage({ type: '__element_clicked', field: 'phone', tab: 'tab-brand' }, '*');
+  }
+});
+
+try { window.parent.postMessage({ type: '__ready' }, '*'); } catch(e){}
+
+// ====================== 3D INTERACTIVE PARTICLE CANVAS ======================
+(function setup3DParticleCanvas() {
+  document.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.createElement('canvas');
+    canvas.id = 'canvas3d-motion';
+    canvas.style.cssText = 'position:fixed; inset:0; pointer-events:none; z-index:1; opacity:0.6; mix-blend-mode:screen;';
+    document.body.prepend(canvas);
+
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    let particles = [];
+    let mouse = { x: null, y: null };
+
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    window.addEventListener('mousemove', (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
+
+    for (let i = 0; i < 40; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        z: Math.random() * 3 + 1,
+        r: Math.random() * 3 + 1,
+        dx: (Math.random() - 0.5) * 0.7,
+        dy: (Math.random() - 0.5) * 0.7,
+        color: i % 2 === 0 ? 'rgba(226, 75, 35, ' : 'rgba(59, 130, 246, '
+      });
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      particles.forEach(p => {
+        p.x += p.dx * p.z * 0.6;
+        p.y += p.dy * p.z * 0.6;
+
+        if (p.x < 0) p.x = width;
+        if (p.x > width) p.x = 0;
+        if (p.y < 0) p.y = height;
+        if (p.y > height) p.y = 0;
+
+        if (mouse.x && mouse.y) {
+          const dx = mouse.x - p.x;
+          const dy = mouse.y - p.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 160) {
+            p.x -= dx * 0.02;
+            p.y -= dy * 0.02;
+          }
+        }
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r * p.z * 0.7, 0, Math.PI * 2);
+        ctx.fillStyle = p.color + (0.12 * p.z) + ')';
+        ctx.fill();
+      });
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    // 3D Card Tilt Engine
+    const tiltCards = document.querySelectorAll('.style-card, .space-card, .process-card, .material-card');
+    tiltCards.forEach(card => {
+      card.style.transformStyle = 'preserve-3d';
+      card.style.transition = 'transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease';
+
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        card.style.transform = `perspective(1000px) rotateX(${-y / 18}deg) rotateY(${x / 18}deg) translateZ(10px)`;
+      });
+
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)';
+      });
+    });
+  });
+})();
+</script>
+
+
+
+</body></html>
