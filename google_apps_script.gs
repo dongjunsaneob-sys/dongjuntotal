@@ -31,7 +31,7 @@ function doPost(e) {
       data = e.parameter;
     }
 
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var ss = SpreadsheetApp.openById('10JE5X_vOkixaxp0b5yaqz7atXy3xhf_zdo77ncHabSU');
     
     // 1. 공통 헤더 정의
     var headers = ['접수일시', '서비스 구분', '고객명/상호', '연락처', '공간 유형', '예상 평수', '상세 문의내용', '처리 상태'];
@@ -62,6 +62,24 @@ function doPost(e) {
 
     var catSheet = getOrCreateSheet(ss, categorySheetName, headers);
     catSheet.appendRow(rowData);
+
+    // 5. 구글 이메일(Gmail)로 실시간 신청 알림 전송
+    try {
+      var recipientEmail = Session.getActiveUser().getEmail();
+      if (recipientEmail) {
+        var subject = '[원스톱 견적 접수] ' + name + ' 고객님의 신규 문의가 도착했습니다.';
+        var bodyText = '🚀 원스톱 웹사이트에서 새로운 견적 문의가 접수되었습니다!\n\n' +
+                       '• 접수일시: ' + timestamp + '\n' +
+                       '• 서비스 구분: ' + serviceType + '\n' +
+                       '• 고객명/상호: ' + name + '\n' +
+                       '• 연락처: ' + phone + '\n' +
+                       '• 공간 유형: ' + spaceType + '\n' +
+                       '• 예상 평수: ' + area + '\n' +
+                       '• 문의 내용: ' + message + '\n\n' +
+                       '📊 구글 시트에서 전체 접수 목록 확인하기:\n' + ss.getUrl();
+        MailApp.sendEmail(recipientEmail, subject, bodyText);
+      }
+    } catch (mailErr) {}
 
     return ContentService.createTextOutput(JSON.stringify({
       result: 'success',

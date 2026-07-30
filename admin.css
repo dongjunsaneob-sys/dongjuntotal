@@ -281,7 +281,9 @@ body {
   gap: 18px;
 }
 .tab-pane.active {
-  display: flex;
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 /* Panel Card */

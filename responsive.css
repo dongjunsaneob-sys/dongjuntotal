@@ -1,0 +1,367 @@
+/* ==========================================================================
+   원스톱 — 반응형 / 타이포그래피 레이어
+   --------------------------------------------------------------------------
+   이 파일은 index.html · interior.html 의 <style> 블록 "다음"에 <link> 로
+   불러온다. 따라서 같은 우선순위에서는 이 파일이 항상 이긴다.
+
+   왜 별도 파일인가:
+   관리자 프로그램(admin.html)의 "저장하기"는 미리보기 iframe 의 DOM 전체를
+   그대로 직렬화해 index.html 에 덮어쓴다. 그래서 HTML 안의 <style> 에 넣은
+   수정은 (iframe 이 옛 내용을 들고 있으면) 저장 한 번에 원상복구된다.
+   CSS 를 이 외부 파일로 빼두면 저장 스냅샷이 건드릴 수 없다.
+
+   구성
+     1) 공통       — 모든 화면폭 (한글 줄바꿈 · 넘침 방지)
+     2) WEB        — 1025px 이상 (데스크톱)
+     3) 태블릿     — 1024px 이하
+     4) 모바일     — 768px 이하
+     5) 소형       — 480px 이하
+     6) 초협폭     — 360px 이하
+   ========================================================================== */
+
+
+/* ==========================================================================
+   1) 공통 — 모든 화면폭
+   ========================================================================== */
+
+/* ---- 한글 줄바꿈 (글씨 깨짐 방지) --------------------------------------
+   기본값(word-break:normal)은 한글을 단어 중간에서 잘라버린다.
+   "인테리어 업체는" → "인테리어 업체" / "는"  처럼 어절이 쪼개져
+   글씨가 깨져 보이는 원인. keep-all 은 어절 단위로만 줄을 바꾼다.
+   단, 컨테이너보다 긴 한 덩어리(URL·긴 숫자)는 keep-all 만 두면 밖으로
+   넘치므로 overflow-wrap 으로 마지막 안전판을 둔다. 예전에는 이 두 속성이
+   모바일 미디어쿼리 안에만 있어서 데스크톱에서는 전혀 적용되지 않았다. */
+body,
+h1, h2, h3, h4, h5, h6,
+p, li, dd, dt, span, div, label, a, button, summary,
+td, th, figcaption, blockquote,
+.sec-title, .sec-lead, .sub, .p-desc, .p-title, .desc,
+.gate-desc, .gate-title, .gate-tag,
+.sol-box-bad, .sol-box-good, .sol-card h4,
+.faq-q, .faq-a, .cost-note, .cost-row .type,
+.pf-comment, .foot-desc, .foot-list, .agree,
+.card-caption, .strip-item, .kpi .lbl, .kpi .desc,
+.why-card h3, .why-card p, .hero-eyebrow, .live-ticker {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* 표·코드처럼 어절 개념이 없는 값은 원래대로 되돌린다 */
+.kbd, code, pre, kbd, samp, [class*="mono"] {
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+}
+
+/* ---- 버튼 · 알약(pill) 라벨은 절대 두 줄로 쪼개지지 않게 --------------
+   "무료 견적받기 →" 같은 버튼 글씨가 두 줄로 내려가면 가장 깨져 보인다. */
+.btn,
+.pf-filter,
+.card-badge,
+.chip,
+.p-meta .chip,
+.gate-tag,
+.sol-badge-bad,
+.sol-badge-good,
+.nav-phone span,
+.cost-row .price,
+.float-kakao,
+.float-call {
+  white-space: nowrap;
+}
+
+/* ---- 내비게이션: 버튼이 밀려나지 않도록 브랜드명이 먼저 줄어든다 ------
+   .btn 에 nowrap 을 주면 좁은 폭에서 브랜드명이 버튼을 화면 밖으로
+   밀어낼 수 있다. 브랜드명이 말줄임(…)으로 먼저 양보하게 만든다. */
+.nav-inner { min-width: 0; }
+.brand { min-width: 0; overflow: hidden; }
+.brand span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.nav-cta { flex-shrink: 0; }
+
+/* ---- 그리드/플렉스 자식이 내용 때문에 부모를 넘기지 않게 --------------
+   min-width:auto 가 기본이라 긴 글이 있으면 트랙이 부모보다 커진다. */
+.gate-grid > *, .solution-grid > *, .why-grid > *, .kpi-grid > *,
+.pf-grid > *, .foot-grid > *, .form-grid > *, .strip-inner > *,
+.contact-grid > *, .cost-inner > *, .p-row > *, .style-grid > *,
+.space-grid > *, .cta-inner > * {
+  min-width: 0;
+}
+
+/* 이미지·영상이 컨테이너를 넘지 않게 (공통 안전판) */
+img, video, svg, iframe { max-width: 100%; }
+
+
+/* ==========================================================================
+   2) WEB — 1025px 이상 (데스크톱)
+   레이아웃은 기존 디자인 그대로 두고, 글씨 넘침만 잡는다.
+   ========================================================================== */
+@media (min-width: 1025px) {
+  /* 읽기 폭이 지나치게 넓어지면 줄이 길어 가독성이 떨어진다 */
+  .sec-lead { max-width: 660px; }
+  .faq-a    { max-width: 860px; }
+
+  /* KPI 설명문이 카드 안에서 넘치던 문제 */
+  .kpi .desc { word-break: keep-all; }
+
+  /* 비용표: 금액이 두 줄로 쪼개지지 않게 */
+  .cost-row .price { white-space: nowrap; }
+  .cost-row .dur   { white-space: nowrap; }
+
+  /* 프로세스 메타 항목이 아이콘과 어긋나 아래로 내려가던 문제 */
+  .p-meta .row { align-items: flex-start; }
+  .p-meta .row svg { margin-top: 3px; }
+
+  /* 문제/해법 배지 두 개가 한 줄에 나란히 유지되도록 */
+  .sol-head { flex-wrap: nowrap; gap: 10px; }
+}
+
+
+/* ==========================================================================
+   3) 태블릿 — 1024px 이하
+   2단 구조가 좁은 폭에서 짜부라지기 전에 미리 1단으로 풀어준다.
+   (예전에는 .contact-grid / .cost-inner 가 어떤 미디어쿼리에도 없어서
+    375px 화면에서 견적 폼이 화면 밖으로 밀려나 아예 보이지 않았다)
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .contact-grid, .cost-inner { grid-template-columns: 1fr !important; gap: 40px !important; }
+  .cost-table { margin-top: 24px !important; }
+  .p-row { grid-template-columns: 110px 1fr !important; gap: 20px 24px !important; }
+  .p-meta { grid-column: 2 !important; }
+  .strip-inner { grid-template-columns: 1fr 1fr !important; }
+  .strip-item:nth-child(2n) { border-right: none !important; }
+  .sol-head { flex-wrap: wrap !important; }
+}
+
+
+/* ==========================================================================
+   4) 모바일 — 768px 이하
+   ========================================================================== */
+@media (max-width: 768px) {
+  .container { padding-left: 18px !important; padding-right: 18px !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; }
+  .block { padding: 40px 0 !important; }
+  .hero { padding: 40px 0 30px !important; }
+
+  /* ---- 타이포그래피 스케일 ---- */
+  h1, .hero h1 { font-size: clamp(26px, 6.5vw, 36px) !important; line-height: 1.25 !important; letter-spacing: -0.035em !important; }
+  h2, .sec-title { font-size: clamp(22px, 5.5vw, 30px) !important; line-height: 1.25 !important; letter-spacing: -0.03em !important; }
+  h3 { font-size: 20px !important; line-height: 1.3 !important; }
+  .sub, .sec-lead { font-size: 14.5px !important; line-height: 1.6 !important; }
+  .sec-lead { max-width: none !important; }
+
+  /* ---- CTA 버튼 전체폭 ---- */
+  .cta-row { flex-direction: column !important; width: 100% !important; gap: 10px !important; }
+  .cta-row .btn { width: 100% !important; justify-content: center !important; text-align: center !important; padding: 14px 18px !important; font-size: 15px !important; box-sizing: border-box !important; }
+
+  /* ---- 내비게이션 ---- */
+  .nav-inner { padding: 12px 18px !important; }
+  .brand span { font-size: 15px !important; }
+  .nav-links { display: none !important; }
+  .nav-cta { gap: 8px !important; }
+  .nav-phone { display: none !important; }
+  .nav-cta .btn { padding: 8px 14px !important; font-size: 12.5px !important; min-height: 40px !important; }
+
+  /* ---- 그리드 1단화 ---- */
+  .solution-grid, .why-grid, .kpi-grid, .space-grid, .style-grid, .cost-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+  .hero-strip { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .hero-strip .side { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+
+  /* ---- 히어로 (풀블리드 모션) ---- */
+  .hero.va { padding: 0 !important; }
+  .hero.va .va-fullbleed { min-height: 76vh !important; max-height: none !important; }
+  .hero.va .va-content { padding-top: 56px !important; padding-bottom: 52px !important; }
+  .hero.va .sub { color: rgba(255,255,255,.86) !important; }
+  .va-stats { gap: 10px !important; margin-top: 28px !important; }
+  .va-stats .hero-badge { padding: 10px 14px !important; font-size: 13px !important; border-radius: 13px !important; }
+  .va-stats .hero-badge .num { font-size: 20px !important; }
+  .hero-badge.br, .hero-badge.tl { display: none !important; }
+  .hero-eyebrow { font-size: 12px !important; }
+
+  /* ---- 카드 · 폼 공통 ---- */
+  .sol-card, .why-card, .space-card, .luxury-style-card, .form-card { padding: 20px 18px !important; border-radius: 14px !important; }
+  .form-grid, .form-grid-wrap { grid-template-columns: 1fr !important; gap: 14px !important; }
+  .field.full { grid-column: span 1 !important; }
+
+  /* ---- 무빙 갤러리 ---- */
+  .marquee-card { width: 270px !important; height: 190px !important; border-radius: 14px !important; }
+  .marquee-card .card-caption { padding: 18px 12px 10px !important; font-size: 12.5px !important; }
+  .marquee-card .card-badge { font-size: 9.5px !important; padding: 2px 7px !important; }
+  #moving-gallery { padding: 44px 0 !important; }
+  .marquee-wrapper {
+    mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent) !important;
+    -webkit-mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent) !important;
+  }
+
+  /* ---- 상단 라이브 티커 — 3줄로 줄바꿈되며 첫 화면을 108px 잡아먹던 문제 ---- */
+  .live-ticker { padding: 7px 0 !important; font-size: 11.5px !important; }
+  .live-ticker .container { gap: 4px 8px !important; row-gap: 3px !important; }
+  .live-ticker .tk-sep { display: none !important; }
+  .live-ticker .tk-item { line-height: 1.4 !important; }
+
+  /* ---- 공지 배너 — 닫기 버튼이 텍스트 위에 겹치던 문제 ---- */
+  #notice-banner .container { padding-right: 34px !important; gap: 8px !important; }
+
+  /* ---- 신뢰 스트립 — 4단(합계 455px)이 347px 안에 들어가 4번째가 잘렸다 ---- */
+  .strip-inner { grid-template-columns: 1fr 1fr !important; gap: 14px 8px !important; padding: 16px 0 !important; }
+  .strip-item { padding: 0 4px !important; border-right: none !important; font-size: 12.5px !important;
+                gap: 8px !important; line-height: 1.35 !important; }
+  .strip-item svg { width: 18px !important; height: 18px !important; }
+
+  /* ---- 프로세스 — 140px/57px/69px 로 짜부라져 글자가 세로로 쏟아졌다 ---- */
+  .p-row { grid-template-columns: 1fr !important; gap: 14px !important; padding: 26px 0 !important; }
+  .p-meta { grid-column: 1 !important; gap: 10px !important; }
+  .p-step { display: flex !important; align-items: baseline !important; gap: 8px !important; font-size: 12px !important; }
+  .p-step .big { display: inline !important; font-size: 26px !important; margin-top: 0 !important; }
+  .p-title { font-size: 20px !important; }
+  .p-desc { font-size: 14.5px !important; max-width: none !important; }
+  .p-meta .row { font-size: 13px !important; align-items: flex-start !important; }
+  .p-meta .row svg { margin-top: 2px !important; }
+  .process-head { gap: 20px !important; }
+  .process-head .btn { width: 100% !important; justify-content: center !important; }
+  .process-list { margin-top: 34px !important; }
+
+  /* ---- 비용표 — 3단이 54px/45px/45px 로 무너져 금액이 세로로 쪼개졌다 ---- */
+  .cost-inner { gap: 30px !important; }
+  .cost-row { grid-template-columns: 1fr auto !important; gap: 4px 12px !important; padding: 16px 0 !important; }
+  .cost-row.head { display: none !important; }
+  .cost-row .type { grid-column: 1 !important; font-size: 15.5px !important; }
+  .cost-row .type small { font-size: 12px !important; }
+  .cost-row .price { grid-column: 2 !important; text-align: right !important; font-size: 16px !important; }
+  .cost-row .dur { grid-column: 1 / -1 !important; font-size: 12.5px !important; color: var(--muted) !important; }
+  .cost-note { font-size: 12px !important; padding: 16px !important; }
+
+  /* ---- 견적 폼 — .contact-grid 가 2단으로 남아 폼 전체가 화면 밖(x:481)에 있었다 ---- */
+  .contact-grid { grid-template-columns: 1fr !important; gap: 28px !important; margin-top: 34px !important; }
+  .contact-side .phone-block { padding: 22px 0 !important; margin-top: 22px !important; }
+  .contact-side .phone-num { font-size: 34px !important; }
+  .contact-side .kkao { padding: 15px 18px !important; font-size: 14px !important; }
+  /* input 이 15px 이면 iOS 사파리가 포커스 시 화면을 강제 확대한다 → 16px 로 올림 */
+  .field input, .field select, .field textarea { font-size: 16px !important; padding: 13px 14px !important; }
+  .field textarea { min-height: 96px !important; }
+  .radio-row { gap: 6px !important; }
+  .radio-row label { padding: 11px 14px !important; font-size: 13.5px !important; }
+  .agree { font-size: 12.5px !important; align-items: flex-start !important; line-height: 1.5 !important; }
+  .agree input { margin-top: 2px !important; flex-shrink: 0 !important; }
+  .form-submit { padding: 16px !important; }
+
+  /* ---- 게이트 카드 ---- */
+  .gate { padding: 26px 0 16px !important; }
+  .gate-head { gap: 12px !important; margin-bottom: 18px !important; }
+  .gate-head h2 { font-size: 22px !important; }
+  .gate-head p { font-size: 13.5px !important; }
+  .gate-title { font-size: 34px !important; margin: 16px 0 10px !important; }
+  .gate-desc { font-size: 13.5px !important; max-width: none !important; }
+  .gate-card { grid-template-columns: 1fr !important; padding: 24px 22px !important; min-height: 0 !important; align-items: start !important; }
+  .gate-arrow { width: 48px !important; height: 48px !important; justify-self: end !important; margin-top: 14px !important; }
+
+  /* ---- KPI ---- */
+  .kpi { padding: 24px 22px !important; }
+  .kpi .num { font-size: 44px !important; margin: 14px 0 6px !important; }
+  .kpi .desc { font-size: 12.5px !important; }
+
+  /* ---- 문제/해법 카드 ---- */
+  .solution-section { padding: 44px 0 !important; }
+  .sol-head { flex-wrap: wrap !important; gap: 6px !important; margin-bottom: 12px !important; }
+  .sol-badge-bad, .sol-badge-good { font-size: 10.5px !important; padding: 4px 9px !important; }
+  .sol-card h4 { font-size: 17.5px !important; margin-bottom: 12px !important; }
+  .sol-box-bad, .sol-box-good { font-size: 13px !important; padding: 12px 14px !important; }
+
+  /* ---- 차별점 카드 — 220px 워터마크가 오른쪽으로 넘쳐 가로 스크롤을 만들었다 ---- */
+  .why-card { min-height: 0 !important; gap: 26px !important; }
+  .why-card .mark { font-size: 120px !important; right: -4px !important; bottom: -14px !important; }
+  .why-card h3 { font-size: 21px !important; margin: 14px 0 10px !important; }
+  .why-card p { font-size: 14.5px !important; }
+
+  /* ---- 포트폴리오 — 1단이라 세로 3,500px 였다. 2단으로 바꿔 밀도 확보 ---- */
+  .pf-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; margin-top: 26px !important; }
+  .pf-item { aspect-ratio: 3/4 !important; }
+  .pf-item .meta { padding: 10px !important; }
+  .pf-item .ttl { font-size: 13.5px !important; }
+  .pf-item .cat { font-size: 9.5px !important; }
+  .pf-item .sq, .pf-item .pf-comment { font-size: 11px !important; }
+  .pf-head { gap: 18px !important; }
+  /* 필터 버튼: 44px 터치 타깃 + 넘칠 때 가로 스와이프 */
+  .pf-filters { flex-wrap: nowrap !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch !important;
+                scrollbar-width: none !important; padding-bottom: 2px !important; }
+  .pf-filters::-webkit-scrollbar { display: none !important; }
+  .pf-filter { padding: 11px 15px !important; flex-shrink: 0 !important; }
+
+  /* ---- FAQ — 터치 타깃 44px 확보, 답변 들여쓰기 제거 ---- */
+  .faq-list { margin-top: 28px !important; }
+  .faq-item { padding: 18px 0 !important; }
+  .faq-q { font-size: 16px !important; min-height: 44px !important; gap: 12px !important; }
+  .faq-q .q-idx { margin-right: 8px !important; font-size: 13.5px !important; }
+  .faq-q .toggle { width: 30px !important; height: 30px !important; flex-shrink: 0 !important; }
+  .faq-a { padding-left: 0 !important; font-size: 14.5px !important; margin-top: 12px !important; max-width: none !important; }
+
+  /* ---- interior.html : 스타일 카드 ----
+     span 3/2 가 남아있어 1단 그리드에 0px 트랙 2개가 생기고
+     그 트랙에 놓인 카드가 화면 밖으로 밀려 사실상 안 보이던 문제 */
+  .style-card.s1, .style-card.s2, .style-card.s3,
+  .style-card.s4, .style-card.s5, .style-card.s6 {
+    grid-column: span 1 !important; grid-row: span 1 !important;
+  }
+  .style-card { min-height: 260px !important; }
+  .style-card h3 { font-size: 20px !important; }
+  .style-card p { max-width: none !important; font-size: 12.5px !important; }
+  .style-card .cover { padding: 18px !important; }
+
+  /* ---- interior.html : 하단 CTA — 1.4fr/1fr 2단이 좁은 폭에서 짜부라졌다 ---- */
+  .cta-inner { grid-template-columns: 1fr !important; gap: 26px !important; }
+  .cta-inner p { max-width: none !important; font-size: 14.5px !important; }
+
+  /* ---- 푸터 — 플로팅 버튼(약 102px)이 마지막 줄을 덮고 있었다 ---- */
+  footer { padding: 40px 0 118px !important; }
+  .foot-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
+  .foot-desc { max-width: none !important; }
+  .foot-list { gap: 8px !important; }
+  .foot-list a { display: inline-flex !important; align-items: center !important; min-height: 40px !important; }
+  .foot-bottom { flex-direction: column !important; gap: 8px !important; text-align: center !important; margin-top: 30px !important; }
+
+  /* ---- 플로팅 버튼 ---- */
+  .float-btns { right: 14px !important; bottom: 14px !important; gap: 8px !important; }
+  .float-kakao, .float-call { padding: 10px 14px !important; font-size: 13px !important; }
+}
+
+
+/* ==========================================================================
+   5) 소형 — 480px 이하
+   ========================================================================== */
+@media (max-width: 480px) {
+  .container { padding-left: 14px !important; padding-right: 14px !important; }
+  h1, .hero h1 { font-size: 24px !important; }
+  h2, .sec-title { font-size: 20px !important; }
+  .marquee-card { width: 240px !important; height: 175px !important; }
+  .gate-title { font-size: 30px !important; }
+  .kpi .num { font-size: 38px !important; }
+  .contact-side .phone-num { font-size: 29px !important; }
+  .p-step .big { font-size: 23px !important; }
+  .why-card .mark { font-size: 96px !important; }
+  .pf-grid { gap: 8px !important; }
+  .pf-item .ttl { font-size: 12.5px !important; }
+  .cost-row .type { font-size: 14.5px !important; }
+  .cost-row .price { font-size: 15px !important; }
+
+  /* 플로팅 버튼 2개가 세로로 88px 를 차지 → 한 줄로 눕혀 화면을 덜 가린다 */
+  .float-btns { flex-direction: row !important; left: 14px !important; right: 14px !important;
+                bottom: 12px !important; align-items: stretch !important; gap: 8px !important; }
+  .float-kakao, .float-call { flex: 1 1 0 !important; justify-content: center !important;
+                              padding: 12px 8px !important; font-size: 13px !important; }
+  footer { padding-bottom: 92px !important; }
+}
+
+
+/* ==========================================================================
+   6) 초협폭 — 360px 이하 (갤럭시 폴드 접은 상태 등)
+   ========================================================================== */
+@media (max-width: 360px) {
+  .strip-inner { grid-template-columns: 1fr !important; gap: 11px !important; }
+  .strip-item { font-size: 13px !important; }
+  .nav-cta .btn { padding: 8px 11px !important; font-size: 12px !important; }
+  .brand span { font-size: 14px !important; }
+  .gate-title { font-size: 27px !important; }
+  .pf-item .pf-comment { display: none !important; }
+}

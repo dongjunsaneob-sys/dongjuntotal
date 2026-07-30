@@ -2,6 +2,9 @@
 <html lang="ko" data-theme="light" style="--accent: #D97706;"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/jpeg" href="logo.jpg">
+<link rel="shortcut icon" type="image/jpeg" href="logo.jpg">
+<link rel="apple-touch-icon" href="logo.jpg">
 <title>원스톱 인테리어 — 공간의 가치를 다시 짓다</title>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" rel="stylesheet">
 
@@ -184,7 +187,7 @@ window.TWEAKS = /*EDITMODE-BEGIN*/{
   }
   .style-card{
     position: relative; border-radius: var(--radius-lg); overflow: hidden;
-    background: var(--chip); cursor: pointer;
+    background: var(--chip); cursor: default;
     transition: transform .3s ease;
   }
   .style-card:hover{ transform: translateY(-4px);}
@@ -218,7 +221,7 @@ window.TWEAKS = /*EDITMODE-BEGIN*/{
   .space-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 60px;}
   .space-card{
     position: relative; overflow: hidden; border-radius: var(--radius-lg);
-    aspect-ratio: 3/4; background: var(--chip); cursor: pointer;
+    aspect-ratio: 3/4; background: var(--chip); cursor: default;
     transition: transform .3s ease;
   }
   .space-card:hover{ transform: translateY(-4px);}
@@ -273,7 +276,7 @@ window.TWEAKS = /*EDITMODE-BEGIN*/{
   .mat-list{ display:flex; flex-direction: column;}
   .mat-item{
     display:grid; grid-template-columns: 60px 1fr 100px; gap: 20px; align-items: center;
-    padding: 22px 0; border-top: 1px solid var(--line); cursor: pointer;
+    padding: 22px 0; border-top: 1px solid var(--line); cursor: default;
     transition: padding-left .2s;
   }
   .mat-item:hover{ padding-left: 12px;}
@@ -356,13 +359,23 @@ window.TWEAKS = /*EDITMODE-BEGIN*/{
     display:flex; justify-content: space-between; font-size: 12px; color: var(--muted); flex-wrap: wrap; gap: 10px;
   }
 
-  /* --------- Floating call --------- */
-  .float-call{
+  /* --------- Floating buttons --------- */
+  .float-btns{
     position: fixed; right: 22px; bottom: 22px; z-index: 30;
-    display:flex; align-items:center; gap: 10px; padding: 14px 18px; border-radius: 999px;
-    background: var(--accent); color: #fff; font-weight: 800; font-size: 15px;
-    box-shadow: 0 10px 30px rgba(226,75,35,.35);
+    display:flex; flex-direction: column; gap: 10px; align-items: flex-end;
   }
+  .float-kakao{
+    display:flex; align-items:center; gap: 8px; padding: 12px 18px; border-radius: 999px;
+    background: #FEE500; color: #191919; font-weight: 800; font-size: 14.5px; text-decoration: none;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18); transition: transform .2s ease;
+  }
+  .float-kakao:hover{ transform: translateY(-2px);}
+  .float-call{
+    display:flex; align-items:center; gap: 8px; padding: 12px 18px; border-radius: 999px;
+    background: var(--accent); color: #fff; font-weight: 800; font-size: 14.5px; text-decoration: none;
+    box-shadow: 0 10px 30px rgba(226,75,35,.35); transition: transform .2s ease;
+  }
+  .float-call:hover{ transform: translateY(-2px);}
 
   /* --------- Placeholder --------- */
   .ph{ background: repeating-linear-gradient(45deg, #E6DFD3 0 12px, #EEE8DC 12px 24px); position:relative;}
@@ -442,13 +455,60 @@ window.TWEAKS = /*EDITMODE-BEGIN*/{
     /* Footer & Floating Call Button */
     .foot-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
     .foot-bottom { flex-direction: column !important; gap: 8px !important; text-align: center !important; }
-    .float-call { right: 16px !important; bottom: 16px !important; padding: 12px 16px !important; font-size: 13.5px !important; }
+    .float-btns { right: 14px !important; bottom: 14px !important; gap: 8px !important; }
+    .float-kakao, .float-call { padding: 10px 14px !important; font-size: 13px !important; }
+
+    /* ===== 스타일 카드 — span 3/2 가 남아있어 1단 그리드에 0px 트랙 2개가 생기고
+       그 트랙에 놓인 카드가 화면 밖으로 밀려 사실상 안 보이던 문제 ===== */
+    .style-card.s1, .style-card.s2, .style-card.s3,
+    .style-card.s4, .style-card.s5, .style-card.s6 {
+      grid-column: span 1 !important; grid-row: span 1 !important;
+    }
+    .style-card { min-height: 260px !important; }
+    .style-card h3 { font-size: 20px !important; }
+    .style-card p { max-width: none !important; font-size: 12.5px !important; }
+    .style-card .cover { padding: 18px !important; }
+
+    /* ===== 하단 CTA — 1.4fr/1fr 2단이 좁은 폭에서 짜부라졌다 ===== */
+    .cta-inner { grid-template-columns: 1fr !important; gap: 26px !important; }
+    .cta-inner p { max-width: none !important; font-size: 14.5px !important; }
+
+    /* ===== 상단 라이브 티커 ===== */
+    .live-ticker { padding: 7px 0 !important; font-size: 11.5px !important; }
+    .live-ticker .container { gap: 4px 8px !important; row-gap: 3px !important; }
+    .live-ticker .tk-sep { display: none !important; }
+    .live-ticker .tk-item { line-height: 1.4 !important; }
+
+    /* input 이 15px 이면 iOS 사파리가 포커스 시 화면을 강제 확대한다 → 16px 로 올림 */
+    .field input, .field select, .field textarea { font-size: 16px !important; padding: 13px 14px !important; }
+    .field textarea { min-height: 96px !important; }
+    .radio-row { gap: 6px !important; }
+    .radio-row label { padding: 11px 14px !important; font-size: 13.5px !important; }
+    .agree { font-size: 12.5px !important; align-items: flex-start !important; line-height: 1.5 !important; }
+    .agree input { margin-top: 2px !important; flex-shrink: 0 !important; }
+
+    /* 터치 타깃 44px 확보 */
+    .faq-q { font-size: 16px !important; min-height: 44px !important; word-break: keep-all !important; }
+    .faq-a { padding-left: 0 !important; font-size: 14.5px !important; }
+    .nav-cta .btn { min-height: 40px !important; }
+    .foot-list { gap: 8px !important; }
+    .foot-list a { display: inline-flex !important; align-items: center !important; min-height: 40px !important; }
+
+    /* 플로팅 버튼(약 102px)이 푸터 마지막 줄을 덮지 않도록 여유 확보 */
+    footer { padding-bottom: 118px !important; }
+    .sec-lead { max-width: none !important; }
   }
 
   @media (max-width: 480px) {
     .container { padding-left: 14px !important; padding-right: 14px !important; }
     h1, .hero h1 { font-size: 24px !important; }
     h2, .sec-title { font-size: 20px !important; }
+    /* 플로팅 버튼 2개가 세로로 88px 를 차지 → 한 줄로 눕혀 화면을 덜 가린다 */
+    .float-btns { flex-direction: row !important; left: 14px !important; right: 14px !important;
+                  bottom: 12px !important; align-items: stretch !important; gap: 8px !important; }
+    .float-kakao, .float-call { flex: 1 1 0 !important; justify-content: center !important;
+                                padding: 12px 8px !important; font-size: 13px !important; }
+    footer { padding-bottom: 92px !important; }
   }
 </style>
 <style id="grabbit-visited-styles">
@@ -457,28 +517,30 @@ window.TWEAKS = /*EDITMODE-BEGIN*/{
         .grabbit-visited:visited {
             color: #551A8B !important; /* Standard visited link purple */
         }
-    </style><style type="text/css">.resize-observer[data-v-8859cc6c]{position:absolute;top:0;left:0;z-index:-1;width:100%;height:100%;border:none;background-color:transparent;pointer-events:none;display:block;overflow:hidden;opacity:0}.resize-observer[data-v-8859cc6c] object{display:block;position:absolute;top:0;left:0;height:100%;width:100%;overflow:hidden;pointer-events:none;z-index:-1}</style><style type="text/css">.resize-observer[data-v-8859cc6c]{position:absolute;top:0;left:0;z-index:-1;width:100%;height:100%;border:none;background-color:transparent;pointer-events:none;display:block;overflow:hidden;opacity:0}.resize-observer[data-v-8859cc6c] object{display:block;position:absolute;top:0;left:0;height:100%;width:100%;overflow:hidden;pointer-events:none;z-index:-1}</style></head>
+    </style><style type="text/css">.resize-observer[data-v-8859cc6c]{position:absolute;top:0;left:0;z-index:-1;width:100%;height:100%;border:none;background-color:transparent;pointer-events:none;display:block;overflow:hidden;opacity:0}.resize-observer[data-v-8859cc6c] object{display:block;position:absolute;top:0;left:0;height:100%;width:100%;overflow:hidden;pointer-events:none;z-index:-1}</style><style type="text/css">.resize-observer[data-v-8859cc6c]{position:absolute;top:0;left:0;z-index:-1;width:100%;height:100%;border:none;background-color:transparent;pointer-events:none;display:block;overflow:hidden;opacity:0}.resize-observer[data-v-8859cc6c] object{display:block;position:absolute;top:0;left:0;height:100%;width:100%;overflow:hidden;pointer-events:none;z-index:-1}</style>
+<link rel="stylesheet" href="responsive.css">
+</head>
 <body>
 
 <!-- ================== NAV ================== -->
 <!-- ================== TOP LIVE TRUST TICKER ================== -->
-<div style="background:linear-gradient(90deg, #0F172A 0%, #064E3B 100%); color:#FFF; font-size:12.5px; font-weight:700; border-bottom:1px solid rgba(16,185,129,0.25); padding:8.5px 0; text-align:center; position:relative; z-index:1001;">
+<div class="live-ticker" style="background:linear-gradient(90deg, #0F172A 0%, #064E3B 100%); color:#FFF; font-size:12.5px; font-weight:700; border-bottom:1px solid rgba(16,185,129,0.25); padding:8.5px 0; text-align:center; position:relative; z-index:1001;">
   <div class="container" style="display:flex; align-items:center; justify-content:center; gap:16px; flex-wrap:wrap;">
-    <span style="display:inline-flex; align-items:center; gap:6px; color:#10B981;">
+    <span class="tk-item" style="display:inline-flex; align-items:center; gap:6px; color:#10B981;">
       <span style="width:8px; height:8px; border-radius:50%; background:#10B981; box-shadow:0 0 10px #10B981;"></span>
       🎨 인하우스 전문 디자이너 15명 1:1 맞춤 설계 상담 제공
     </span>
-    <span style="color:rgba(255,255,255,0.3);">|</span>
-    <span>⚡ 상가 · 주거 · 사무실 시공 1,500건+ 실적 보장</span>
-    <span style="color:rgba(255,255,255,0.3);">|</span>
-    <span style="color:var(--accent); font-weight:800;">🔒 실측 후 계약서 명시 · 별도 변경·추가요소 외 추가 청구 없음</span>
+    <span class="tk-sep" style="color:rgba(255,255,255,0.3);">|</span>
+    <span class="tk-item">⚡ 상가 · 주거 · 사무실 시공 1,500건+ 실적 보장</span>
+    <span class="tk-sep" style="color:rgba(255,255,255,0.3);">|</span>
+    <span class="tk-item" style="color:var(--accent); font-weight:800;">🔒 실측 후 계약서 명시 · 별도 변경·추가요소 외 추가 청구 없음</span>
   </div>
 </div>
 
 <header class="nav">
   <div class="container nav-inner">
     <a href="index.html" class="brand" style="display:flex; align-items:center; gap:10px;">
-      <img src="design_handoff_onestop_landing/로고.jpeg" alt="원스톱 철거 인테리어 로고" style="height:38px; width:auto; border-radius:6px; object-fit:contain;">
+      <img src="logo.jpg" alt="원스톱 철거 인테리어 로고" style="height:38px; width:auto; border-radius:6px; object-fit:contain;">
       <span data-bind="brandName">원스톱 철거 인테리어</span>
     </a>
     <nav class="nav-links">
@@ -518,7 +580,7 @@ window.TWEAKS = /*EDITMODE-BEGIN*/{
     <div class="hero-strip">
       <div class="main" style="position:relative; overflow:hidden; border:2px solid var(--accent); border-radius:var(--radius-lg); box-shadow: 0 20px 45px -10px color-mix(in oklab, var(--accent) 35%, transparent);">
         <video autoplay="" loop="" muted="" playsinline="" style="width:100%; height:100%; object-fit:cover; border-radius:var(--radius-lg); filter:contrast(1.05) brightness(1.02);">
-          <source src="design_handoff_onestop_landing/로고동영상.mp4" type="video/mp4">
+          <source src="logo_video.mp4" type="video/mp4">
         </video>
         <span class="tag" style="position:absolute; bottom:14px; left:14px; background:var(--accent); color:var(--accent-ink); font-size:11px; font-weight:900; padding:4px 12px; border-radius:99px;">🎬 OFFICIAL BRAND MOTION</span>
       </div>
@@ -614,7 +676,7 @@ window.TWEAKS = /*EDITMODE-BEGIN*/{
 <!-- ================== Portfolio (실제 시공 사례) ================== -->
 <section class="block" id="portfolio" style="position:relative; overflow:hidden;">
   <div style="position:absolute; inset:0; z-index:0; pointer-events:none; opacity:0.14; mix-blend-mode:luminosity;">
-    <img src="design_handoff_onestop_landing/인테리어.gif" alt="인테리어 디자인 모션 배경" style="width:100%; height:100%; object-fit:cover; filter:contrast(1.1) brightness(0.9);">
+    <img src="interior.gif" alt="인테리어 디자인 모션 배경" style="width:100%; height:100%; object-fit:cover; filter:contrast(1.1) brightness(0.9);">
   </div>
   <div class="container" style="position:relative; z-index:1;">
     <div style="max-width:720px;">
@@ -685,7 +747,7 @@ window.TWEAKS = /*EDITMODE-BEGIN*/{
 <!-- ================== Design Process ================== -->
 <section class="block" id="process" style="position:relative; overflow:hidden;">
   <div style="position:absolute; inset:0; z-index:0; pointer-events:none; opacity:0.14; mix-blend-mode:luminosity;">
-    <img src="design_handoff_onestop_landing/구축물철거.gif" alt="구축물 철거 모션 배경" style="width:100%; height:100%; object-fit:cover; filter:contrast(1.1) brightness(0.9);">
+    <img src="structure_demolition.gif" alt="구축물 철거 모션 배경" style="width:100%; height:100%; object-fit:cover; filter:contrast(1.1) brightness(0.9);">
   </div>
   <div class="container" style="position:relative; z-index:1;">
     <div class="dp-head">
@@ -928,10 +990,16 @@ window.TWEAKS = /*EDITMODE-BEGIN*/{
   </div>
 </footer>
 
-<a class="float-call" href="tel:1533-6968">
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-  <span data-bind="phone">1533-6968</span> 전화 상담
-</a>
+<div class="float-btns">
+  <a class="float-kakao" href="http://pf.kakao.com/_yNljX/chat" target="_blank" rel="noopener noreferrer">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="#191919"><path d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.557 1.707 4.8 4.27 6.054-.188.702-.682 2.545-.78 2.94-.122.49.178.483.376.352.155-.103 2.466-1.675 3.473-2.36.54.078 1.1.119 1.661.119 4.97 0 9-3.186 9-7.115S16.97 3 12 3z"></path></svg>
+    카톡 상담
+  </a>
+  <a class="float-call" href="tel:1533-6968">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+    <span data-bind="phone">1533-6968</span> 전화 상담
+  </a>
+</div>
 
 <!-- ================== TWEAKS ================== -->
 <div id="tweaks">
@@ -965,6 +1033,7 @@ window.TWEAKS = /*EDITMODE-BEGIN*/{
 const T = window.TWEAKS;
 const $ = (s, r=document) => r.querySelector(s);
 const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+const EDIT_MODE = false;
 
 function getContrastColor(hexColor) {
   if (!hexColor || hexColor.charAt(0) !== '#') return '#FFFFFF';
@@ -1009,7 +1078,7 @@ function handleSubmit(e){
   const btn = form.querySelector('button[type=submit]');
   const origBtnText = btn.innerHTML;
 
-  btn.textContent = '구글 스프레드시트로 전송 중...';
+  btn.textContent = '신청 중...';
   btn.style.background = '#2563EB';
 
   const formData = {
@@ -1025,22 +1094,25 @@ function handleSubmit(e){
   const googleScriptUrl = (window.TWEAKS && window.TWEAKS.googleScriptUrl) || 'https://script.google.com/macros/s/AKfycbzddLHE6DZn2ANwS6ajHrGGZ-kmfUSYLR9ZQLDkFNqw_7qwBr559_U0tJEDBmp3HpKLuQ/exec';
 
   if (googleScriptUrl && googleScriptUrl.includes('script.google.com')) {
+    const params = new URLSearchParams();
+    Object.keys(formData).forEach(key => params.append(key, formData[key]));
+
     fetch(googleScriptUrl, {
       method: 'POST',
       mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData)
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString()
     }).then(() => {
-      btn.textContent = '✅ 구글 시트 저장 완료 · 30분 내 연락드립니다!';
+      btn.textContent = '✅ 신청 완료! (1일 내 연락드리겠습니다)';
       btn.style.background = '#2A7D4F';
       setTimeout(() => { form.reset(); btn.innerHTML = origBtnText; btn.style.background = ''; }, 3500);
     }).catch(err => {
-      btn.textContent = '접수완료 · 30분 내 연락드립니다';
+      btn.textContent = '✅ 신청 완료! (1일 내 연락드리겠습니다)';
       btn.style.background = '#2A7D4F';
       setTimeout(() => { form.reset(); btn.innerHTML = origBtnText; btn.style.background = ''; }, 3500);
     });
   } else {
-    btn.textContent = '접수 완료! (담당 디자이너 30분 내 연락)';
+    btn.textContent = '✅ 신청 완료! (1일 내 연락드리겠습니다)';
     btn.style.background = '#2A7D4F';
     setTimeout(() => { form.reset(); btn.innerHTML = origBtnText; btn.style.background = ''; }, 3500);
   }
@@ -1049,17 +1121,36 @@ function handleSubmit(e){
 
 // ====================== VISUAL CLICK-TO-EDIT & DIRECT PHOTO UPLOADER ======================
 (function setupVisualEditor() {
+  if (typeof EDIT_MODE !== 'undefined' && !EDIT_MODE) return;
   // 편집 모드: 항상 활성화 — 이 파일을 직접 열어 텍스트/사진을 바로 클릭 수정하는 것이 기본 작업 방식이다.
   // 실제 배포 시에는 "🚀 배포용 HTML 다운로드" 또는 admin의 "포용 HTML 내보내기"로 편집 도구가 제거된 파일을 생성한다.
   const style = document.createElement('style');
   style.id = 'visual-editor-style';
   style.textContent = `
-    [contenteditable="true"] { outline: none; transition: background 0.2s ease, outline 0.2s ease; cursor: text; }
-    [contenteditable="true"]:hover { background: color-mix(in oklab, var(--accent) 8%, transparent); border-radius: 4px; }
-    [contenteditable="true"]:focus { outline: 2px solid var(--accent); background: color-mix(in oklab, var(--accent) 12%, transparent); border-radius: 4px; }
+    [] { outline: none; transition: background 0.2s ease, outline 0.2s ease; cursor: text; }
+    []:hover { background: color-mix(in oklab, var(--accent) 8%, transparent); border-radius: 4px; }
+    []:focus { outline: 2px solid var(--accent); background: color-mix(in oklab, var(--accent) 12%, transparent); border-radius: 4px; }
     img, .ph, .hero-main-img, .hero-sub-img { cursor: pointer; transition: filter 0.2s ease, transform 0.2s ease; }
     img:hover, .ph:hover, .hero-main-img:hover { filter: brightness(1.1); transform: scale(1.005); }
-    
+
+    /* 블록 단위 자유 편집 툴바 — 공간 유형 카드 · 스타일 카드 · 디자인 스타일 카드처럼
+       "반복되는 카드 목록"에 순서 이동 / 복제 / 삭제 버튼을 붙여준다.
+       편집 모드에서만 삽입되고 저장 시 제거되므로 실제 방문자에게는 보이지 않는다. */
+    .block-ctrl-bar {
+      display: flex; align-items: center; gap: 6px; margin: 14px 0 8px; padding: 6px 10px;
+      background: color-mix(in oklab, var(--accent) 10%, transparent);
+      border: 1px dashed color-mix(in oklab, var(--accent) 45%, transparent);
+      border-radius: 8px; font-size: 11.5px; font-weight: 700; color: var(--ink-2);
+      cursor: default; user-select: none;
+    }
+    .block-ctrl-bar .bcb-label { margin-right: auto; opacity: .75; letter-spacing: .02em; white-space: nowrap; }
+    .block-ctrl-bar button {
+      border: 1px solid color-mix(in oklab, var(--accent) 40%, transparent);
+      background: var(--bg-elev); color: var(--ink); padding: 4px 9px; border-radius: 6px;
+      font-size: 11px; font-weight: 800; cursor: pointer; white-space: nowrap;
+    }
+    .block-ctrl-bar button:hover { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
     .floating-export-bar {
       position: fixed; bottom: 24px; left: 24px; z-index: 99999;
       display: flex; gap: 10px; align-items: center;
@@ -1092,7 +1183,7 @@ function handleSubmit(e){
     
     allElements.forEach(el => {
       if (excludeTags.includes(el.tagName)) return;
-      if (el.closest('.floating-export-bar') || el.closest('#json-file-input')) return;
+      if (el.closest('.floating-export-bar') || el.closest('#json-file-input') || el.closest('.block-ctrl-bar')) return;
       
       const hasTextNode = Array.from(el.childNodes).some(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim().length > 0);
       // DIV는 목록에서 뺐다 — 사진+캡션을 감싸기만 하는 레이아웃 div(.style-card 등)까지
@@ -1101,8 +1192,8 @@ function handleSubmit(e){
       const isTextContainer = ['H1','H2','H3','H4','H5','H6','P','SPAN','A','B','STRONG','EM','SMALL','LI','LABEL','TD','TH','KBD','BUTTON'].includes(el.tagName);
 
       if ((hasTextNode || isTextContainer) && el.children.length <= 4) {
-        if (!el.hasAttribute('contenteditable')) {
-          el.setAttribute('contenteditable', 'true');
+        if (!el.hasAttribute('')) {
+          el.setAttribute('', 'true');
           el.setAttribute('title', '✏️ 클릭하여 글씨 직접 수정');
           
           el.addEventListener('blur', () => {
@@ -1118,7 +1209,7 @@ function handleSubmit(e){
   // Prevent link jumps during text editing
   document.addEventListener('click', (e) => {
     const target = e.target;
-    if (target && (target.getAttribute('contenteditable') === 'true' || target.closest('[contenteditable="true"]'))) {
+    if (target && (target.getAttribute('') === 'true' || target.closest('[]'))) {
       const link = target.closest('a');
       if (link && link.getAttribute('href') !== '#' && !link.getAttribute('href').startsWith('javascript:')) {
         if (document.activeElement === target || document.activeElement === link) {
@@ -1128,9 +1219,77 @@ function handleSubmit(e){
     }
   }, true);
 
+  // ---- 블록 단위 자유 편집 (순서 이동 · 복제 · 삭제) --------------------------
+  // 이 페이지의 카드 목록(공간 유형 / 스타일 / 디자인 스타일)은 순수 정적 HTML이라
+  // JS가 배열로 다시 그리지 않는다. 그래서 복제·삭제해도 재생성 로직과 충돌하지 않는다.
+  // 카드 안의 "SPACE · 01", "STYLE 01 · ..." 같은 문구는 자유 서술형이라 자동
+  // 번호 매기기는 하지 않는다 — 필요하면 클릭해서 직접 고치면 된다.
+  const BLOCK_GROUPS = [
+    { container: '.space-grid', item: '.space-card', minCount: 1, label: '공간 유형 카드' },
+    { container: '.style-grid', item: '.style-card', minCount: 1, label: '스타일 카드' },
+    { container: '.dp-grid', item: '.luxury-style-card', minCount: 1, label: '디자인 스타일 카드' },
+  ];
+
+  function setupBlockControls() {
+    BLOCK_GROUPS.forEach(g => {
+      const container = document.querySelector(g.container);
+      if (!container || container.dataset.blockCtrlBound) return;
+      container.dataset.blockCtrlBound = '1';
+
+      function refresh() {
+        Array.from(container.querySelectorAll(':scope > .block-ctrl-bar')).forEach(b => b.remove());
+        const items = Array.from(container.children).filter(el => el.matches && el.matches(g.item));
+
+        items.forEach((item, idx) => {
+          const bar = document.createElement('div');
+          bar.className = 'block-ctrl-bar';
+          bar.setAttribute('', 'false');
+          bar.innerHTML =
+            '<span class="bcb-label">' + g.label + ' ' + (idx + 1) + '/' + items.length + '</span>' +
+            '<button type="button" data-act="up">▲ 위로</button>' +
+            '<button type="button" data-act="down">▼ 아래</button>' +
+            '<button type="button" data-act="dup">＋ 복제해서 추가</button>' +
+            '<button type="button" data-act="del">🗑 삭제</button>';
+          container.insertBefore(bar, item);
+
+          bar.addEventListener('click', (e) => {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            e.preventDefault();
+            e.stopPropagation();
+            const act = btn.dataset.act;
+            if (act === 'up') {
+              const prev = items[idx - 1];
+              if (prev) container.insertBefore(item, prev);
+            } else if (act === 'down') {
+              const next = items[idx + 1];
+              if (next) container.insertBefore(next, item);
+            } else if (act === 'dup') {
+              const clone = item.cloneNode(true);
+              clone.classList.add('is-visible');
+              container.insertBefore(clone, item.nextSibling);
+            } else if (act === 'del') {
+              if (items.length <= g.minCount) {
+                alert(g.label + '는 최소 ' + g.minCount + '개는 있어야 합니다.');
+                return;
+              }
+              if (!confirm(g.label + ' — 이 항목을 삭제할까요?')) return;
+              item.remove();
+            }
+            makeAllTextElementsEditable();
+            refresh();
+          });
+        });
+      }
+
+      refresh();
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     makeAllTextElementsEditable();
-    setTimeout(makeAllTextElementsEditable, 1000);
+    setupBlockControls();
+    setTimeout(() => { makeAllTextElementsEditable(); setupBlockControls(); }, 1000);
 
     document.addEventListener('click', (e) => {
       const ph = e.target.closest('img, .ph, .hero-main-img, .hero-sub-img');
@@ -1180,12 +1339,13 @@ function handleSubmit(e){
         if (txt(phone)) tweaks.phone = txt(phone);
 
         const clone = document.documentElement.cloneNode(true);
-        clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+        clone.querySelectorAll('[]').forEach(el => el.removeAttribute(''));
         clone.querySelectorAll('[title]').forEach(el => {
           const t = el.getAttribute('title') || '';
           if (t.startsWith('✏️') || t.startsWith('클릭하여')) el.removeAttribute('title');
         });
-        clone.querySelectorAll('#visual-editor-style, #visual-editor-file-input, #canvas3d-motion, .floating-export-bar').forEach(el => el.remove());
+        clone.querySelectorAll('#visual-editor-style, #visual-editor-file-input, #canvas3d-motion, .floating-export-bar, .block-ctrl-bar').forEach(el => el.remove());
+        clone.querySelectorAll('[data-block-ctrl-bound]').forEach(el => el.removeAttribute('data-block-ctrl-bound'));
 
         // 문자열 치환 대신 DOM에서 TWEAKS <script> 요소를 직접 찾아 textContent만 바꾼다.
         const tweaksScript = Array.from(clone.querySelectorAll('head script'))
@@ -1194,7 +1354,8 @@ function handleSubmit(e){
           tweaksScript.textContent = '// ---- Tweakable defaults ----\nwindow.TWEAKS = /*EDITMODE-BEGIN*/' + JSON.stringify(tweaks, null, 2) + '/*EDITMODE-END*/;';
         }
 
-        return '<!doctype html>\n' + clone.outerHTML;
+        const cleanHtml = '<!doctype html>\n' + clone.outerHTML;
+        return cleanHtml.replace(/const\s+EDIT_MODE\s*=\s*true\s*;/g, 'const EDIT_MODE = false;');
       }
 
       function downloadHtml(html, filename) {
@@ -1283,6 +1444,16 @@ document.addEventListener('click', (e) => {
     const target = e.target;
     if (target.closest('[data-bind="brandName"]')) window.parent.postMessage({ type: '__element_clicked', field: 'brandName', tab: 'tab-brand' }, '*');
     else if (target.closest('[data-bind="phone"]')) window.parent.postMessage({ type: '__element_clicked', field: 'phone', tab: 'tab-brand' }, '*');
+  }
+});
+
+// 관리자에게 "방금 보낸 데이터를 DOM 에 반영 완료했다"고 알린다.
+// admin 의 harvestEditsFromIframe() 가 아직 반영 안 된 DOM 을 읽어서
+// 갓 업로드한 사진을 예전 사진으로 되돌려버리는 것을 막는 확인 신호.
+window.addEventListener('message', (e) => {
+  const d = e.data || {};
+  if (d.type === '__update_full_data') {
+    try { window.parent.postMessage({ type: '__data_applied' }, '*'); } catch(err){}
   }
 });
 

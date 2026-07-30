@@ -94,15 +94,29 @@
   const previewDimensionText = document.getElementById('preview-dimension-text');
 
   // ==================== INITIALIZATION ====================
-  function init() {
+  async function init() {
     bindTabs();
     bindControls();
     bindImageUploads();
+    bindBatchImageUpload();
+    bindBatchTextFill();
+    bindMarqueeBatchUpload();
     bindGlobalPreviewDropzone();
     bindGoogleSheetTests();
     renderPortfolioManager();
     renderMarqueeManager();
     syncUIFromState();
+
+    // 초기 활성화된 탭 패널의 display 스타일을 flex로 보장
+    const activePane = document.querySelector('.tab-pane.active');
+    if (activePane) activePane.style.display = 'flex';
+
+    // 새로고침(F5) 시 실제 저장된 index.html 소스 파일에서 최신 수정한 설정과 포트폴리오를 복원
+    await syncFromSavedFiles();
+
+    // 첫 로딩 때 iframe 은 admin.html 마크업의 src="index.html" 로 뜨므로
+    // setPage() 를 거치지 않는다. 드리프트 검사 기준값을 여기서 잡아준다.
+    await rememberFileSignature(state.currentPage || 'index.html');
 
     if (window.location.protocol === 'file:') {
       setTimeout(() => {
@@ -111,6 +125,28 @@
     }
 
     window.addEventListener('message', (e) => {
+      if (e.data && e.data.type === '__data_applied') {
+        // iframe 이 방금 보낸 데이터를 DOM 에 반영 완료했다 → 이제 회수해도 안전
+        markIframeApplied();
+        return;
+      }
+      // ★ "무빙 갤러리 사진을 미리보기에서 직접 눌러 바꾸면 반영이 안 된다"의 남은 절반 ★
+      // index.html 쪽에서 배열(window.MARQUEE_PHOTOS)을 갱신해도, admin.js 의
+      // state.marqueePhotos 는 그 사실을 모른 채로 남아있었다. 그 상태에서 사이드바
+      // 아무 글자나 한 번만 고쳐도 readStateFromUI() → sendStateToIframe() 가 실행되며
+      // "예전" state.marqueePhotos 를 iframe 에 통째로 다시 밀어넣어, 방금 직접 고친
+      // 사진/문구를 덮어써 버렸다. iframe이 수정 사실을 즉시 알려오면 admin.js 의
+      // state 도 그 자리에서 최신으로 맞춰, 이후 어떤 푸시가 나가도 유실되지 않게 한다.
+      if (e.data && e.data.type === '__marquee_item_edited') {
+        const idx = e.data.index;
+        const item = e.data.item;
+        if (typeof idx === 'number' && idx >= 0 && item) {
+          if (!Array.isArray(state.marqueePhotos)) state.marqueePhotos = [];
+          state.marqueePhotos[idx] = Object.assign({}, state.marqueePhotos[idx] || {}, item);
+          renderMarqueeManager(); // 사이드바 썸네일 목록도 함께 최신화
+        }
+        return;
+      }
       if (e.data && (e.data.type === '__edit_mode_available' || e.data.type === '__ready')) {
         sendStateToIframe();
       }
@@ -119,6 +155,86 @@
     iframe.addEventListener('load', () => {
       sendStateToIframe();
     });
+  }
+
+  // "window.X = [ ... ];" 에서 배열 리터럴만 정확히 잘라낸다.
+  //
+  // 예전 코드는 /window\.X\s*=\s*([\s\S]*?);/ 로 "첫 세미콜론까지" 잘랐다.
+  // 그런데 업로드한 사진은 "data:image/jpeg;base64,..." 형태여서 그 안에
+  // 세미콜론이 들어있다. 그래서 JSON 이 203자쯤에서 끊기고 JSON.parse 가
+  // 실패했는데, catch(e){} 가 오류를 조용히 삼켜버렸다.
+  // 결과: state.marqueePhotos 가 기본 사진(Unsplash)으로 남고,
+  //       저장하면 그 기본값이 파일에 덮어써져 업로드한 사진이 전부 사라졌다.
+  //       (= "업로드하고 저장하면 그전 파일로 되돌아가는" 현상의 진짜 원인,
+  //          index.html 이 13MB → 158KB 로 줄어들며 사진이 날아갔다)
+  // 대괄호 깊이를 세면서 문자열 안의 세미콜론·괄호는 무시하고 잘라낸다.
+  function extractJsonArray(src, varName) {
+    const at = src.indexOf('window.' + varName);
+    if (at === -1) return null;
+    const start = src.indexOf('[', at);
+    if (start === -1) return null;
+    let depth = 0, inStr = false, esc = false;
+    for (let i = start; i < src.length; i++) {
+      const ch = src[i];
+      if (inStr) {
+        if (esc) esc = false;
+        else if (ch === '\\') esc = true;
+        else if (ch === '"') inStr = false;
+        continue;
+      }
+      if (ch === '"') { inStr = true; continue; }
+      else if (ch === '[') depth++;
+      else if (ch === ']') { depth--; if (depth === 0) return src.slice(start, i + 1); }
+    }
+    return null; // 닫는 대괄호를 못 찾음 = 파일이 손상된 상태
+  }
+
+  async function syncFromSavedFiles() {
+    try {
+      const resp = await fetch('index.html?t=' + Date.now());
+      if (resp.ok) {
+        const text = await resp.text();
+        const doc = new DOMParser().parseFromString(text, 'text/html');
+        
+        const tweaksScript = Array.from(doc.querySelectorAll('head script'))
+          .find(s => s.textContent.includes('/*EDITMODE-BEGIN*/'));
+        if (tweaksScript) {
+          const match = tweaksScript.textContent.match(/\/\*EDITMODE-BEGIN\*\/([\s\S]*?)\/\*EDITMODE-END\*\//);
+          if (match && match[1]) {
+            try {
+              const fileTweaks = JSON.parse(match[1]);
+              Object.assign(state.tweaks, fileTweaks);
+            } catch(e){}
+          }
+        }
+
+        const dataScript = doc.querySelector('#saved-page-data');
+        if (dataScript && dataScript.textContent) {
+          const content = dataScript.textContent;
+          const pfArr = extractJsonArray(content, 'PORTFOLIO_ITEMS');
+          if (pfArr) {
+            try {
+              const pfData = JSON.parse(pfArr);
+              if (Array.isArray(pfData) && pfData.length) state.portfolio = pfData;
+            } catch(e){ console.error('PORTFOLIO_ITEMS 파싱 실패 — 기본값이 저장되어 사진이 사라질 수 있습니다:', e); }
+          }
+          const mqArr = extractJsonArray(content, 'MARQUEE_PHOTOS');
+          if (mqArr) {
+            try {
+              const mqData = JSON.parse(mqArr);
+              if (Array.isArray(mqData) && mqData.length) state.marqueePhotos = mqData;
+            } catch(e){ console.error('MARQUEE_PHOTOS 파싱 실패 — 기본값이 저장되어 사진이 사라질 수 있습니다:', e); }
+          }
+        }
+
+        syncUIFromState();
+        renderPortfolioManager();
+        renderMarqueeManager();
+        sendStateToIframe();
+      }
+    } catch (e) {
+      console.warn('Sync from saved files skipped:', e);
+    }
   }
 
   // ==================== UI STATE SYNC ====================
@@ -217,6 +333,25 @@
     sendStateToIframe();
   }
 
+  // ---- iframe 반영 대기 상태 ----------------------------------------------
+  // postMessage 는 비동기다. sendStateToIframe() 직후의 iframe DOM 은 아직
+  // "보내기 전" 내용이다. 그런데 업로드/추가/삭제 핸들러는 전부
+  //   sendStateToIframe();  →  saveToLocalStorage();  ( → harvestEditsFromIframe() )
+  // 순서로 호출하기 때문에, 방금 올린 사진이 들어있는 state 를
+  // 아직 옛 사진이 그려진 DOM 으로 되돌려 덮어써 버렸다.
+  // ("업로드하고 저장하면 그전 파일로 돌아가는" 현상의 실제 원인)
+  // 그래서 iframe 이 "반영 완료(__data_applied)" 를 알려주기 전까지는
+  // DOM 을 신뢰하지 않고 회수를 건너뛴다.
+  let iframePushPending = false;
+  let iframePushAt = 0;
+  function markIframePushed() { iframePushPending = true; iframePushAt = Date.now(); }
+  function markIframeApplied() { iframePushPending = false; }
+  // 확인 신호를 못 받는 예외 상황(옛 index.html 등)에서 회수가 영구히 멈추지
+  // 않도록 1.5초 뒤에는 그냥 신뢰한다.
+  function iframeIsStale() {
+    return iframePushPending && (Date.now() - iframePushAt) < 1500;
+  }
+
   function sendStateToIframe() {
     if (!iframe.contentWindow) return;
     try {
@@ -224,6 +359,7 @@
       if (state.currentPage === 'interior.html' && state.tweaks.interiorAccent) {
         activeTweaks.accent = state.tweaks.interiorAccent;
       }
+      markIframePushed();
       iframe.contentWindow.postMessage({
         type: '__update_full_data',
         tweaks: activeTweaks,
@@ -232,6 +368,7 @@
         marqueePhotos: state.marqueePhotos
       }, '*');
     } catch (e) {
+      markIframeApplied();
       console.warn('iframe postMessage warning:', e);
     }
   }
@@ -241,12 +378,24 @@
     document.querySelectorAll('.tab-item').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(p => {
+          p.classList.remove('active');
+          p.style.display = 'none';
+        });
 
         tab.classList.add('active');
         const paneId = tab.dataset.tab;
         const targetPane = document.getElementById(paneId);
-        if (targetPane) targetPane.classList.add('active');
+        if (targetPane) {
+          targetPane.classList.add('active');
+          targetPane.style.display = 'flex';
+        }
+
+        if (paneId === 'tab-marquee') {
+          renderMarqueeManager();
+        } else if (paneId === 'tab-portfolio') {
+          renderPortfolioManager();
+        }
       });
     });
 
@@ -267,10 +416,33 @@
     });
   }
 
+  // "저장하면 원상복구" 3번째 원인 대비 —
+  // savePageToDisk() 는 iframe 의 DOM 전체를 직렬화해 파일에 덮어쓴다.
+  // 그래서 iframe 이 파일을 읽어온 "뒤"에 그 파일이 밖에서(에디터·다른 탭·git)
+  // 바뀌면, 저장 한 번에 그 변경이 통째로 날아간다.
+  // iframe 이 읽어간 시점의 파일 크기를 기억해 두고, 저장 직전에 달라졌는지 본다.
+  const loadedFileSig = {};
+  async function rememberFileSignature(pageName) {
+    try {
+      const resp = await fetch(pageName + '?sig=' + Date.now());
+      if (resp.ok) loadedFileSig[pageName] = (await resp.text()).length;
+    } catch (e) { /* 서버 미연결이면 검사를 건너뛴다 */ }
+  }
+  async function fileChangedSinceLoad(pageName) {
+    const known = loadedFileSig[pageName];
+    if (typeof known !== 'number') return false;
+    try {
+      const resp = await fetch(pageName + '?sig=' + Date.now());
+      if (!resp.ok) return false;
+      return (await resp.text()).length !== known;
+    } catch (e) { return false; }
+  }
+
   function setPage(pageName) {
     state.currentPage = pageName;
     iframe.src = pageName;
     previewUrlText.textContent = `http://localhost/${pageName}`;
+    rememberFileSignature(pageName);
   }
 
   function setViewport(device) {
@@ -278,6 +450,53 @@
     previewContainer.setAttribute('data-viewport', device);
     const labels = { desktop: '100% (Full Responsive)', tablet: '768px (Tablet)', mobile: '375px (Mobile)' };
     previewDimensionText.textContent = labels[device] || device;
+  }
+
+  function escapeHtmlText(s) {
+    return (s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  // ★ "배포까지 되는 부분을 확실하게" 요청에 대한 대응 ★
+  // 저장 버튼을 누르면 파일 저장은 즉시 끝나지만, 실제 Vercel 배포는 서버 터미널에서
+  // 백그라운드로 몇 초~몇십 초 더 걸린다. 예전에는 그 결과를 아무도 확인하지 않고
+  // "배포가 시작되었습니다"라고만 낙관적으로 보여줬다 — 실패해도 사용자는 알 수 없었다.
+  // 저장 직후부터 /api/deploy-status 를 몇 초 간격으로 확인해, 이번 저장에 해당하는
+  // (saveStartedAt 이후에 시작된) 결과가 나오면 성공/실패를 화면에 다시 알린다.
+  async function pollDeployStatus(sinceTs, opts) {
+    const maxWaitMs = (opts && opts.maxWaitMs) || 60000;
+    const intervalMs = (opts && opts.intervalMs) || 2500;
+    const start = Date.now();
+    while (Date.now() - start < maxWaitMs) {
+      await new Promise(r => setTimeout(r, intervalMs));
+      let status;
+      try {
+        const res = await fetch('/api/deploy-status?t=' + Date.now());
+        status = await res.json();
+      } catch (e) {
+        continue; // 네트워크 순간 오류 — 계속 재시도
+      }
+      if (!status || typeof status.startedAt !== 'number' || status.startedAt < sinceTs) {
+        continue; // 아직 이번 저장에 대한 배포 기록이 아니다(이전 결과이거나 아직 없음)
+      }
+      if (status.state === 'success') {
+        showNotification(
+          `🌐 <b>실제 배포 확인됨</b> — 라이브 사이트에 정상 반영되었습니다.` +
+          (status.url ? `<br><span style="opacity:.8">${escapeHtmlText(status.url)}</span>` : ''),
+          'success'
+        );
+        return;
+      }
+      if (status.state === 'error') {
+        showNotification(
+          `❌ <b>실제 배포 실패</b> — 파일은 저장됐지만 <b>라이브 사이트에는 반영되지 않았습니다.</b><br>` +
+          `<span style="opacity:.85">${escapeHtmlText(status.message || '알 수 없는 오류')}</span>`,
+          'error'
+        );
+        return;
+      }
+      // state === 'pending' — 계속 대기
+    }
+    showNotification(`⚠️ ${Math.round(maxWaitMs/1000)}초 안에 배포 결과를 확인하지 못했습니다. 서버를 실행 중인 콘솔 창을 확인해 주세요.`, 'warning');
   }
 
   // ==================== EVENT BINDING ====================
@@ -354,12 +573,24 @@
     document.getElementById('btn-preset-samples').addEventListener('click', fillSampleImages);
 
     document.getElementById('btn-save-local').addEventListener('click', async () => {
-      saveToLocalStorage();
-      const result = await savePageToDisk();
-      if (result.success) {
-        showNotification(`💾 ${state.currentPage} — 프로젝트 원본과 dist/ 배포 파일 양쪽에 저장되었습니다!`, 'success');
-      } else {
-        showNotification(`⚠️ 파일 저장 실패: ${result.error || '알 수 없는 오류'} — server.js가 켜진 상태인지 확인해 주세요.`, 'error');
+      showNotification(`⏳ <b>${state.currentPage}</b> 저장 진행 중입니다...`, 'info');
+      try {
+        const saveStartedAt = Date.now();
+        saveToLocalStorage();
+        const result = await savePageToDisk();
+        if (result && result.success) {
+          showNotification(`💾 <b>${state.currentPage}</b> 저장 완료! 프로젝트 소스와 <b>dist/ 배포 폴더</b>에 100% 저장되었습니다.<br>실제 배포 결과 확인 중...`, 'success');
+          pollDeployStatus(saveStartedAt);
+        } else {
+          // 예전에는 실패해도 "파일 저장 완료" 라고 알려서, 저장이 안 됐는데도
+          // 된 줄 알고 새로고침했다가 내용이 사라진 것처럼 보였다.
+          // 실패는 실패라고 정확히 알린다.
+          const why = (result && result.error) ? result.error : '서버 응답 없음';
+          showNotification(`❌ <b>파일 저장 실패</b> — ${why}<br>브라우저에는 임시 보관되었지만 <b>파일에는 저장되지 않았습니다.</b> 새로고침하면 사라집니다.`, 'error');
+        }
+      } catch (err) {
+        console.error('Save error:', err);
+        showNotification(`❌ <b>파일 저장 실패</b> — ${err && err.message ? err.message : err}<br>브라우저에는 임시 보관되었지만 <b>파일에는 저장되지 않았습니다.</b>`, 'error');
       }
     });
 
@@ -491,6 +722,229 @@
       sendStateToIframe();
       showNotification('⚡ After 사진이 즉시 반영되었습니다!', 'success');
     });
+  }
+
+  // 📸 시공 사진 여러 장 한 번에 털어넣기 (다중 파일 업로드 & 자동 연속 배정)
+  function bindBatchImageUpload() {
+    const batchInput = document.getElementById('batch-file-input');
+    const batchDropzone = document.getElementById('batch-upload-dropzone');
+
+    if (!batchInput || !batchDropzone) return;
+
+    const processFiles = (files) => {
+      const imgFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+      if (!imgFiles.length) return;
+
+      showNotification(`📸 ${imgFiles.length}장의 시공 사진을 한 번에 불러오는 중입니다...`, 'info');
+
+      let readCount = 0;
+      const readData = [];
+
+      imgFiles.forEach((file, idx) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          readData[idx] = e.target.result;
+          readCount++;
+          if (readCount === imgFiles.length) {
+            applyBatchImages(readData.filter(Boolean));
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    };
+
+    batchInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length) {
+        processFiles(e.target.files);
+        e.target.value = '';
+      }
+    });
+
+    batchDropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      batchDropzone.style.background = 'rgba(56,189,248,0.15)';
+      batchDropzone.style.borderColor = '#0EA5E9';
+    });
+
+    batchDropzone.addEventListener('dragleave', () => {
+      batchDropzone.style.background = 'rgba(56,189,248,0.06)';
+      batchDropzone.style.borderColor = '#38BDF8';
+    });
+
+    batchDropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      batchDropzone.style.background = 'rgba(56,189,248,0.06)';
+      batchDropzone.style.borderColor = '#38BDF8';
+      if (e.dataTransfer.files && e.dataTransfer.files.length) {
+        processFiles(e.dataTransfer.files);
+      }
+    });
+  }
+
+  function applyBatchImages(dataUrls) {
+    if (!dataUrls || !dataUrls.length) return;
+
+    let urlIdx = 0;
+    // 1. 기존 portfolio 카드 중 이미지가 없거나 빈 카드부터 채운다
+    for (let i = 0; i < state.portfolio.length && urlIdx < dataUrls.length; i++) {
+      if (!state.portfolio[i].img) {
+        state.portfolio[i].img = dataUrls[urlIdx++];
+      }
+    }
+
+    // 2. 만약 남아있는 이미지가 있으면 자동으로 신규 포트폴리오 카드를 계속 추가한다
+    const sampleCategories = ['store', 'office', 'home'];
+    const defaultTitles = ['상가 리모델링 시공 현장', '사무실 가벽 철거 및 인테리어', '아파트 주거 공간 리모델링', '감성 매장 원상복구 및 시공'];
+
+    while (urlIdx < dataUrls.length) {
+      const idx = state.portfolio.length;
+      state.portfolio.push({
+        cat: sampleCategories[idx % sampleCategories.length],
+        ttl: defaultTitles[idx % defaultTitles.length],
+        sq: '30평대 · 전체',
+        img: dataUrls[urlIdx++],
+        comment: '전문 팀 100% 직영 시공 완공 현장'
+      });
+    }
+
+    // 3. 무빙 갤러리(marqueePhotos)에도 자동으로 수십 장의 업로드 사진을 연속 추가 동기화
+    if (!state.marqueePhotos) state.marqueePhotos = [];
+    dataUrls.forEach((url, i) => {
+      state.marqueePhotos.push({
+        img: url,
+        title: defaultTitles[i % defaultTitles.length],
+        badge: 'NEW PROJECT'
+      });
+    });
+
+    renderPortfolioManager();
+    renderMarqueeManager();
+    sendStateToIframe();
+    saveToLocalStorage();
+    scheduleAutoSave();
+
+    showNotification(`✨ 총 <b>${dataUrls.length}장</b>의 사진이 갤러리와 <b>3D 무빙 갤러리</b>에 동시에 자동 등록되었습니다!`, 'success');
+  }
+
+  // ✏️ 시공 사진 글씨 한 번에 일괄 변경
+  function bindBatchTextFill() {
+    const btn = document.getElementById('btn-batch-apply-text');
+    if (!btn) return;
+
+    btn.addEventListener('click', () => {
+      const ttl = document.getElementById('batch-inp-ttl').value.trim();
+      const sq = document.getElementById('batch-inp-sq').value.trim();
+      const comment = document.getElementById('batch-inp-comment').value.trim();
+
+      if (!ttl && !sq && !comment) {
+        showNotification('⚠️ 일괄 적용할 제목, 평수, 또는 코멘트 중 하나 이상을 입력해 주세요.', 'warning');
+        return;
+      }
+
+      state.portfolio.forEach(p => {
+        if (ttl) p.ttl = ttl;
+        if (sq) p.sq = sq;
+        if (comment) p.comment = comment;
+      });
+
+      renderPortfolioManager();
+      sendStateToIframe();
+      saveToLocalStorage();
+      scheduleAutoSave();
+
+      showNotification('✨ 포트폴리오 전체 카드의 글씨가 한 번에 일괄 변경되었습니다!', 'success');
+    });
+  }
+
+  // 🎠 무빙 갤러리 다중 이미지 업로드 & 글씨 일괄 변경
+  function bindMarqueeBatchUpload() {
+    const mqInput = document.getElementById('marquee-batch-file-input');
+    const mqDropzone = document.getElementById('marquee-batch-dropzone');
+    const btnApply = document.getElementById('btn-marquee-batch-apply-text');
+
+    if (mqInput && mqDropzone) {
+      const processFiles = (files) => {
+        const imgFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+        if (!imgFiles.length) return;
+
+        showNotification(`🎠 무빙 갤러리용 ${imgFiles.length}장의 사진을 불러오는 중입니다...`, 'info');
+
+        let readCount = 0;
+        const readData = [];
+
+        imgFiles.forEach((file, idx) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            readData[idx] = e.target.result;
+            readCount++;
+            if (readCount === imgFiles.length) {
+              if (!state.marqueePhotos) state.marqueePhotos = [];
+              readData.filter(Boolean).forEach((url, i) => {
+                state.marqueePhotos.push({
+                  img: url,
+                  title: '시공 현장 라이브',
+                  badge: 'STORE'
+                });
+              });
+              renderMarqueeManager();
+              sendStateToIframe();
+              saveToLocalStorage();
+              scheduleAutoSave();
+              showNotification(`🎠 무빙 갤러리에 <b>${imgFiles.length}장</b>의 사진이 연속 등록되었습니다!`, 'success');
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+      };
+
+      mqInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files.length) {
+          processFiles(e.target.files);
+          e.target.value = '';
+        }
+      });
+
+      mqDropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        mqDropzone.style.background = 'rgba(245,158,11,0.15)';
+      });
+      mqDropzone.addEventListener('dragleave', () => {
+        mqDropzone.style.background = 'rgba(245,158,11,0.06)';
+      });
+      mqDropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        mqDropzone.style.background = 'rgba(245,158,11,0.06)';
+        if (e.dataTransfer.files && e.dataTransfer.files.length) {
+          processFiles(e.dataTransfer.files);
+        }
+      });
+    }
+
+    if (btnApply) {
+      btnApply.addEventListener('click', () => {
+        const ttl = document.getElementById('marquee-batch-inp-ttl').value.trim();
+        const badge = document.getElementById('marquee-batch-inp-badge').value.trim();
+
+        if (!ttl && !badge) {
+          showNotification('⚠️ 일괄 적용할 제목 또는 뱃지를 입력해 주세요.', 'warning');
+          return;
+        }
+
+        if (state.marqueePhotos) {
+          state.marqueePhotos.forEach(m => {
+            if (ttl) m.title = ttl;
+            if (badge) m.badge = badge;
+          });
+        }
+
+        renderMarqueeManager();
+        sendStateToIframe();
+        saveToLocalStorage();
+        scheduleAutoSave();
+
+        showNotification('✨ 무빙 갤러리 전체 카드의 글씨가 한 번에 일괄 변경되었습니다!', 'success');
+      });
+    }
   }
 
   function setupImageUploader(boxId, inputId, previewId, delBtnId, callback) {
@@ -677,81 +1131,108 @@
 
   // ==================== MOVING MARQUEE GALLERY MANAGER ====================
   function renderMarqueeManager() {
-    const container = document.getElementById('marquee-list-container');
-    if (!container) return;
-    container.innerHTML = '';
+    try {
+      const container = document.getElementById('marquee-list-container');
+      if (!container) return;
+      container.innerHTML = '';
 
-    if (!state.marqueePhotos) {
-      state.marqueePhotos = JSON.parse(JSON.stringify(DEFAULT_STATE.marqueePhotos));
-    }
+      const fallbackPhotos = [
+        { img: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=800&q=80', title: '상가 미니멀 카페 완공', badge: 'STORE' },
+        { img: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80', title: '오픈형 스마트 오피스', badge: 'OFFICE' },
+        { img: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80', title: '프리미엄 헤어 살롱', badge: 'BEAUTY' },
+        { img: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=800&q=80', title: '아늑한 주거 공간 리모델링', badge: 'HOME' },
+        { img: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80', title: '프라이빗 다이닝 바', badge: 'BAR' },
+        { img: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80', title: '청결 메디컬 센터', badge: 'MEDICAL' }
+      ];
 
-    state.marqueePhotos.forEach((item, idx) => {
-      const card = document.createElement('div');
-      card.className = 'portfolio-editor-card';
-      card.style.background = 'var(--admin-card-bg)';
-      card.style.border = '1px solid var(--admin-card-border)';
-      card.style.borderRadius = '14px';
-      card.style.padding = '14px';
-      card.style.marginBottom = '12px';
+      if (!state.marqueePhotos || !Array.isArray(state.marqueePhotos) || state.marqueePhotos.length === 0) {
+        state.marqueePhotos = JSON.parse(JSON.stringify(fallbackPhotos));
+      }
 
-      card.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-          <span style="font-weight:900; font-size:12.5px; color:var(--admin-accent);">무빙 갤러리 #${idx + 1}</span>
-          <button class="action-btn secondary sm btn-del-marquee" style="color:#EF4444; padding:3px 8px; font-size:11px;">🗑️ 삭제</button>
-        </div>
-        <div style="display:grid; grid-template-columns:110px 1fr; gap:14px; align-items:center;">
-          <div class="image-upload-box mq-thumb-box" style="height:80px; margin:0; cursor:pointer;">
-            <div class="upload-preview" style="background-image:${item.img ? `url('${item.img}')` : 'none'}; background-size:cover; background-position:center; height:100%; display:flex; align-items:center; justify-content:center;">
-              ${!item.img ? '<span class="ph-text" style="font-size:10px;">📁 사진 선택</span>' : ''}
-            </div>
-            <input type="file" class="mq-file-input" accept="image/*" style="display:none;" />
+      state.marqueePhotos.forEach((item, idx) => {
+        if (!item) return;
+
+        const card = document.createElement('div');
+        card.className = 'portfolio-editor-card';
+        card.style.background = 'var(--admin-card-bg)';
+        card.style.border = '1px solid var(--admin-card-border)';
+        card.style.borderRadius = '14px';
+        card.style.padding = '14px';
+        card.style.marginBottom = '12px';
+
+        const safeTitle = escapeAttr(item.title || '');
+        const safeBadge = escapeAttr(item.badge || 'PROJECT');
+
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <span style="font-weight:900; font-size:12.5px; color:#F59E0B;">무빙 갤러리 #${idx + 1}</span>
+            <button class="action-btn secondary sm btn-del-marquee" style="color:#EF4444; padding:3px 10px; font-size:11.5px; font-weight:800; cursor:pointer;">🗑️ 삭제</button>
           </div>
-          <div>
-            <div class="form-group" style="margin-bottom:6px;">
-              <label style="font-size:11px;">사진 제목 / 설명</label>
-              <input type="text" class="form-control sm mq-inp-title" value="${escapeAttr(item.title || '')}" placeholder="예: 상가 철거 후 미니멀 카페" />
+          <div style="display:grid; grid-template-columns:110px 1fr; gap:14px; align-items:center;">
+            <div class="image-upload-box mq-thumb-box" style="height:85px; margin:0; cursor:pointer; border-radius:10px; overflow:hidden; border:1px dashed #F59E0B; position:relative;">
+              <div class="mq-preview-inner" style="width:100%; height:100%; background-size:cover; background-position:center; display:flex; align-items:center; justify-content:center;">
+                ${!item.img ? '<span class="ph-text" style="font-size:11px; color:#F59E0B; font-weight:700;">📁 사진 선택</span>' : ''}
+              </div>
+              <input type="file" class="mq-file-input" accept="image/*" style="display:none;" />
             </div>
-            <div class="form-group" style="margin:0;">
-              <label style="font-size:11px;">태그 뱃지 문구 (우측 상단 뱃지)</label>
-              <input type="text" class="form-control sm mq-inp-badge" value="${escapeAttr(item.badge || '')}" placeholder="예: DEMO & INT" />
+            <div>
+              <div class="form-group" style="margin-bottom:8px;">
+                <label style="font-size:11px; color:var(--admin-text-sub); display:block; margin-bottom:3px;">사진 제목 / 설명</label>
+                <input type="text" class="form-control sm mq-inp-title" value="${safeTitle}" placeholder="예: 상가 철거 후 미니멀 카페" style="font-size:12px; padding:6px 10px;" />
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label style="font-size:11px; color:var(--admin-text-sub); display:block; margin-bottom:3px;">태그 뱃지 문구 (우측 상단 뱃지)</label>
+                <input type="text" class="form-control sm mq-inp-badge" value="${safeBadge}" placeholder="예: DEMO & INT" style="font-size:12px; padding:6px 10px;" />
+              </div>
             </div>
           </div>
-        </div>
-      `;
+        `;
 
-      const thumbBox = card.querySelector('.mq-thumb-box');
-      const fileInp = card.querySelector('.mq-file-input');
-      const inpTitle = card.querySelector('.mq-inp-title');
-      const inpBadge = card.querySelector('.mq-inp-badge');
-      const btnDel = card.querySelector('.btn-del-marquee');
-
-      thumbBox.addEventListener('click', () => fileInp.click());
-      fileInp.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = (evt) => {
-            item.img = evt.target.result;
-            renderMarqueeManager();
-            sendStateToIframe();
-            showNotification(`⚡ 무빙 갤러리 #${idx + 1} 사진이 바로 업로드되었습니다!`, 'success');
-          };
-          reader.readAsDataURL(file);
+        const prevInner = card.querySelector('.mq-preview-inner');
+        if (prevInner && item.img) {
+          prevInner.style.backgroundImage = `url("${item.img}")`;
         }
+
+        const thumbBox = card.querySelector('.mq-thumb-box');
+        const fileInp = card.querySelector('.mq-file-input');
+        const inpTitle = card.querySelector('.mq-inp-title');
+        const inpBadge = card.querySelector('.mq-inp-badge');
+        const btnDel = card.querySelector('.btn-del-marquee');
+
+        thumbBox.addEventListener('click', () => fileInp.click());
+        fileInp.addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+              item.img = evt.target.result;
+              renderMarqueeManager();
+              sendStateToIframe();
+              saveToLocalStorage();
+              scheduleAutoSave();
+              showNotification(`⚡ 무빙 갤러리 #${idx + 1} 사진이 업로드되었습니다! (곧 자동 저장됩니다)`, 'success');
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+
+        inpTitle.addEventListener('input', () => { item.title = inpTitle.value; sendStateToIframe(); saveToLocalStorage(); scheduleAutoSave(1500); });
+        inpBadge.addEventListener('input', () => { item.badge = inpBadge.value; sendStateToIframe(); saveToLocalStorage(); scheduleAutoSave(1500); });
+
+        btnDel.addEventListener('click', () => {
+          state.marqueePhotos.splice(idx, 1);
+          renderMarqueeManager();
+          sendStateToIframe();
+          saveToLocalStorage();
+          scheduleAutoSave();
+          showNotification('무빙 사진이 삭제되었습니다. (곧 자동 저장됩니다)', 'info');
+        });
+
+        container.appendChild(card);
       });
-
-      inpTitle.addEventListener('input', () => { item.title = inpTitle.value; sendStateToIframe(); });
-      inpBadge.addEventListener('input', () => { item.badge = inpBadge.value; sendStateToIframe(); });
-
-      btnDel.addEventListener('click', () => {
-        state.marqueePhotos.splice(idx, 1);
-        renderMarqueeManager();
-        sendStateToIframe();
-        showNotification('무빙 사진이 삭제되었습니다.', 'info');
-      });
-
-      container.appendChild(card);
-    });
+    } catch (err) {
+      console.error('renderMarqueeManager error handled:', err);
+    }
   }
 
   const btnAddMq = document.getElementById('btn-add-marquee');
@@ -765,6 +1246,8 @@
       });
       renderMarqueeManager();
       sendStateToIframe();
+      saveToLocalStorage();
+      scheduleAutoSave();
     });
   }
 
@@ -773,6 +1256,10 @@
   // 회수 없이 저장하면 sendStateToIframe()가 직전 상태를 다시 적용해
   // "저장을 눌러도 미리보기 수정 내용이 되돌아가는" 문제가 발생한다.
   function harvestEditsFromIframe() {
+    // 아직 iframe 이 최신 state 를 반영하지 않았다면 DOM 은 "보내기 전" 내용이다.
+    // 이때 회수하면 갓 업로드한 사진/새로 추가한 항목이 예전 값으로 되돌아간다.
+    if (iframeIsStale()) return;
+
     let doc;
     try { doc = iframe && iframe.contentDocument; } catch (e) { return; }
     if (!doc || !doc.body) return;
@@ -784,37 +1271,55 @@
     };
 
     // 공통 바인딩 텍스트 (브랜드명 · 전화번호)
+    // 주의: 조건은 "요소가 있으면"이어야 한다. 예전에는 if (txt(el)) 였는데,
+    // 그러면 사용자가 글자를 지워 빈 값으로 만든 경우 회수를 건너뛰고
+    // 저장 시 applyTweaks()/setText()가 예전 값을 다시 써넣어 원상복구됐다.
     const brand = doc.querySelector('[data-bind="brandName"]');
-    if (txt(brand)) state.tweaks.brandName = txt(brand);
+    if (brand) state.tweaks.brandName = txt(brand);
     const phone = doc.querySelector('[data-bind="phone"]');
-    if (txt(phone)) state.tweaks.phone = txt(phone);
+    if (phone) state.tweaks.phone = txt(phone);
 
     if (state.currentPage !== 'interior.html') {
       // 히어로 카피 (현재 표시 중인 variant 기준)
       const visibleHero = Array.from(doc.querySelectorAll('.hero[data-variant]')).find(h => h.style.display !== 'none');
       const heroRoot = visibleHero || doc;
       const copy = heroRoot.querySelector('[data-hero-copy]');
-      if (txt(copy)) state.tweaks.heroHeadline = copy.innerText.trim();
+      if (copy) state.tweaks.heroHeadline = copy.innerText.trim();
       const sub = heroRoot.querySelector('[data-hero-sub]');
-      if (txt(sub)) state.tweaks.heroSub = sub.innerText.trim();
+      if (sub) state.tweaks.heroSub = sub.innerText.trim();
 
       // 게이트 카드 라벨 · 설명
       const gDemoLbl = doc.querySelector('[data-gate-label="demo"]');
-      if (txt(gDemoLbl)) state.tweaks.gateDemoLabel = txt(gDemoLbl);
+      if (gDemoLbl) state.tweaks.gateDemoLabel = txt(gDemoLbl);
       const gIntLbl = doc.querySelector('[data-gate-label="interior"]');
-      if (txt(gIntLbl)) state.tweaks.gateInteriorLabel = txt(gIntLbl);
+      if (gIntLbl) state.tweaks.gateInteriorLabel = txt(gIntLbl);
       const gDemoDesc = doc.querySelector('.gate-card[data-gate="demo"] .gate-desc');
-      if (txt(gDemoDesc)) state.tweaks.gateDemoDesc = txt(gDemoDesc);
+      if (gDemoDesc) state.tweaks.gateDemoDesc = txt(gDemoDesc);
       const gIntDesc = doc.querySelector('.gate-card[data-gate="interior"] .gate-desc');
-      if (txt(gIntDesc)) state.tweaks.gateInteriorDesc = txt(gIntDesc);
+      if (gIntDesc) state.tweaks.gateInteriorDesc = txt(gIntDesc);
+
+      // 아래 6개는 savePageToDisk() 의 setText() 가 저장 직전에 무조건 덮어쓰는
+      // 필드인데, 여태 회수 대상에서 빠져 있었다. 그래서 미리보기에서 직접 고친
+      // 문구(특히 #contact 의 제목)가 저장하면 예전 값으로 되돌아갔다.
+      // setText() 와 "같은 셀렉터"로 먼저 회수해 두면 왕복이 무손실이 된다.
+      const harvestBySel = (sel, key) => {
+        const el = doc.querySelector(sel);
+        if (el) state.tweaks[key] = txt(el);
+      };
+      harvestBySel('.cost-sec-title, .cost-header h2', 'costTitle');
+      harvestBySel('.cost-sec-lead, .cost-header p', 'costLead');
+      harvestBySel('#contact .sec-title, [data-bind="contactTitle"]', 'contactTitle');
+      harvestBySel('#contact .sec-sub, [data-bind="contactSub"]', 'contactSub');
+      harvestBySel('footer .company-name, [data-bind="footerCompany"]', 'footerCompany');
+      harvestBySel('footer .company-info, [data-bind="footerInfo"]', 'footerInfo');
 
       // 히어로 이미지 (클릭/드래그로 직접 교체한 배경)
       const hv = bgUrl(doc.querySelector('.hero-visual .ph'));
-      if (hv) state.images.heroVisual = hv;
+      if (hv && (!state.images.heroVisual || hv.startsWith('data:'))) state.images.heroVisual = hv;
       const hb = bgUrl(doc.querySelector('.side.before .ph'));
-      if (hb) state.images.heroBefore = hb;
+      if (hb && (!state.images.heroBefore || hb.startsWith('data:'))) state.images.heroBefore = hb;
       const ha = bgUrl(doc.querySelector('.side.after .ph'));
-      if (ha) state.images.heroAfter = ha;
+      if (ha && (!state.images.heroAfter || ha.startsWith('data:'))) state.images.heroAfter = ha;
 
       // 포트폴리오 카드 (제목 · 평수 · 코멘트 · 사진)
       doc.querySelectorAll('#pf-grid .pf-item').forEach((item, i) => {
@@ -827,7 +1332,7 @@
         const cm = txt(item.querySelector('.pf-comment')).replace(/^💬\s*/, '');
         if (cm && cm !== '시공 코멘트 입력...') p.comment = cm;
         const img = bgUrl(item.querySelector('.ph'));
-        if (img) p.img = img;
+        if (img && (!p.img || img.startsWith('data:'))) p.img = img;
       });
 
       // 무빙 갤러리 (직접 교체한 사진 · 캡션) — 각 트랙은 무한루프용 2배 복제라 앞 절반만 회수
@@ -845,7 +1350,32 @@
         }).filter(c => c.img);
       };
       const mq = harvestTrack(doc.getElementById('marquee-track-1')).concat(harvestTrack(doc.getElementById('marquee-track-2')));
-      if (mq.length) state.marqueePhotos = mq;
+      if (mq.length) {
+        mq.forEach((item, idx) => {
+          if (state.marqueePhotos && state.marqueePhotos[idx]) {
+            const curImg = state.marqueePhotos[idx].img;
+            if (curImg && (curImg.startsWith('data:') || !item.img)) {
+              item.img = curImg;
+            }
+          }
+        });
+        // DOM 에서 회수한 개수가 state 보다 적으면 state 를 덮어쓰지 않는다.
+        // harvestTrack() 은 .filter(c => c.img) 로 사진 없는 카드를 버리고
+        // 트랙이 정확히 2배 복제라고 가정하므로, 개수가 줄어든 결과를 그대로
+        // 대입하면 방금 추가/업로드한 사진이 조용히 사라진다.
+        if (!Array.isArray(state.marqueePhotos) || mq.length >= state.marqueePhotos.length) {
+          state.marqueePhotos = mq;
+        } else {
+          // 개수는 유지하고, 회수된 범위의 제목/뱃지만 반영한다
+          mq.forEach((item, idx) => {
+            if (state.marqueePhotos[idx]) {
+              state.marqueePhotos[idx].title = item.title;
+              state.marqueePhotos[idx].badge = item.badge;
+              if (item.img) state.marqueePhotos[idx].img = item.img;
+            }
+          });
+        }
+      }
     }
 
     // 회수한 값을 사이드바 입력칸에도 반영 — 이후 readStateFromUI()가 되덮지 않도록
@@ -858,13 +1388,42 @@
     set('inp-gate-demo-desc', state.tweaks.gateDemoDesc);
     set('inp-gate-interior-label', state.tweaks.gateInteriorLabel);
     set('inp-gate-interior-desc', state.tweaks.gateInteriorDesc);
+    // 아래 6개도 반드시 사이드바 입력칸에 되돌려 써야 한다.
+    // readStateFromUI() 가 이 입력칸들을 그대로 읽어 state.tweaks 에 대입하므로,
+    // 여기서 갱신하지 않으면 방금 미리보기에서 회수한 값이 예전 입력칸 값으로
+    // 곧바로 덮어써진다. (미리보기에서 고친 문의 제목이 저장돼도 안 바뀌던 원인)
+    set('inp-cost-title', state.tweaks.costTitle);
+    set('inp-cost-lead', state.tweaks.costLead);
+    set('inp-contact-title', state.tweaks.contactTitle);
+    set('inp-contact-sub', state.tweaks.contactSub);
+    set('inp-footer-company', state.tweaks.footerCompany);
+    set('inp-footer-info', state.tweaks.footerInfo);
   }
 
   // ==================== STORAGE & EXPORT ====================
   function saveToLocalStorage() {
+    // 순서가 중요하다. readStateFromUI() 는 끝에서 sendStateToIframe() 를 호출하고,
+    // 그 순간부터 iframe DOM 은 "반영 대기" 상태가 되어 회수가 차단된다.
+    // 예전 순서(readStateFromUI → harvest)는 그래서 미리보기에서 직접 고친 내용을
+    // 한 번도 회수하지 못했고, 저장 시 setText() 가 예전 값으로 되돌려버렸다.
+    // 미리보기 DOM 이 먼저(=가장 최신) 이므로 반드시 회수를 먼저 한다.
     harvestEditsFromIframe();
     readStateFromUI();
-    localStorage.setItem('onestop_admin_state', JSON.stringify(state));
+    // ★ "저장이 안 된다"의 실제 원인이었던 부분 ★
+    // localStorage 는 보통 5~10MB 한도인데, 사진을 몇 장만 업로드해도 base64로
+    // 커진 state 전체가 그 한도를 쉽게 넘는다. 그러면 setItem() 이 예외를 던지고,
+    // 이 함수를 호출한 "💾 저장하기" 버튼 핸들러의 try 블록 안에서
+    //   saveToLocalStorage();        ← 여기서 예외 발생
+    //   await savePageToDisk();      ← 그래서 실제 파일 저장은 시작도 못 해봄
+    // 순서로 실행되기 때문에, 진짜 파일 저장(disk + dist/ + 배포)이 단 한 번도
+    // 시도되지 못한 채 "저장 실패"만 떴다. localStorage 저장은 그저 "실수로 탭을
+    // 닫았을 때 복구용" 브라우저 캐시일 뿐이므로, 여기서 실패해도 실제 파일 저장은
+    // 절대 막으면 안 된다 — try/catch 로 완전히 격리한다.
+    try {
+      localStorage.setItem('onestop_admin_state', JSON.stringify(state));
+    } catch (e) {
+      console.warn('브라우저 임시 저장(localStorage) 생략 — 용량 초과. 실제 파일 저장은 계속 진행합니다:', e && e.message);
+    }
     renderPortfolioManager();
     renderMarqueeManager();
   }
@@ -909,16 +1468,49 @@
   // — 서버(admin)에서 보이는 화면과 실제 배포 파일이 달라지는 원인 제거
   function sanitizeExportedHtml(html) {
     try {
-      const doc = new DOMParser().parseFromString(html, 'text/html');
+      let clean = html.replace(/const\s+EDIT_MODE\s*=\s*true\s*;/g, 'const EDIT_MODE = false;');
+      const doc = new DOMParser().parseFromString(clean, 'text/html');
       doc.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
       doc.querySelectorAll('[title]').forEach(el => {
         const t = el.getAttribute('title') || '';
         if (t.startsWith('✏️') || t.startsWith('클릭하여')) el.removeAttribute('title');
       });
-      doc.querySelectorAll('#visual-editor-style, #visual-editor-file-input, #canvas3d-motion, .floating-export-bar, .admin-toast-notif').forEach(el => el.remove());
+      doc.querySelectorAll('#visual-editor-style, #visual-editor-file-input, #canvas3d-motion, .floating-export-bar, .admin-toast-notif, .block-ctrl-bar').forEach(el => el.remove());
+      doc.querySelectorAll('[data-block-ctrl-bound]').forEach(el => el.removeAttribute('data-block-ctrl-bound'));
       return '<!doctype html>\n' + doc.documentElement.outerHTML;
     } catch (e) {
-      return html;
+      return html.replace(/const\s+EDIT_MODE\s*=\s*true\s*;/g, 'const EDIT_MODE = false;');
+    }
+  }
+
+  // 무빙 갤러리 등 목록 편집(삭제/등록/업로드)처럼 짧은 시간에 여러 번 발생할 수 있는 변경들을
+  // 매번 개별적으로 savePageToDisk()(전체 HTML 저장 + Vercel 프로덕션 배포)하면 클릭할 때마다
+  // 수 초씩 멈추고, 연달아 누르면 저장이 겹쳐서 삭제/등록이 꼬인 것처럼 보인다.
+  // 화면(iframe)과 로컬 저장은 즉시 반영하고, 실제 파일 저장/배포는 짧게 모아 한 번만 실행한다.
+  let autoSaveTimer = null;
+  let autoSaveInFlight = false;
+  let autoSavePending = false;
+  function scheduleAutoSave(delay = 1000) {
+    if (autoSaveTimer) clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(runAutoSave, delay);
+  }
+  async function runAutoSave() {
+    autoSaveTimer = null;
+    if (autoSaveInFlight) { autoSavePending = true; return; }
+    autoSaveInFlight = true;
+    try {
+      const result = await savePageToDisk();
+      if (result && result.success) {
+        showNotification('✅ 변경사항이 저장되고 사이트에 배포되었습니다!', 'success');
+      }
+    } catch (e) {
+      console.error('autoSave error:', e);
+    } finally {
+      autoSaveInFlight = false;
+      if (autoSavePending) {
+        autoSavePending = false;
+        runAutoSave();
+      }
     }
   }
 
@@ -930,23 +1522,94 @@
     if (!iframe || !iframe.contentDocument) {
       return { success: false, error: '미리보기를 불러오지 못했습니다' };
     }
-    const pageName = state.currentPage === 'interior.html' ? 'interior.html' : 'index.html';
-    const rawHtml = sanitizeExportedHtml('<!doctype html>\n' + iframe.contentDocument.documentElement.outerHTML);
 
+    harvestEditsFromIframe();
+    readStateFromUI();
+
+    const pageName = state.currentPage === 'interior.html' ? 'interior.html' : 'index.html';
     const activeTweaks = Object.assign({}, state.tweaks);
     if (pageName === 'interior.html' && state.tweaks.interiorAccent) {
       activeTweaks.accent = state.tweaks.interiorAccent;
     }
 
-    // 문자열 치환이 아니라 DOM에서 TWEAKS/데이터 <script> 요소를 직접 찾아 textContent만 바꾼다.
-    // (문자열 치환은 페이지 자신의 저장 로직 소스 코드 안에도 같은 마커 문구가 들어있어
-    //  자기 자신을 오염시키는 문제가 있었다.)
-    const doc = new DOMParser().parseFromString(rawHtml, 'text/html');
-    const tweaksScript = Array.from(doc.querySelectorAll('head script'))
-      .find(s => s.textContent.includes('window.TWEAKS = /*EDITMODE-BEGIN*/'));
-    if (tweaksScript) {
-      tweaksScript.textContent = '// ---- Tweakable defaults ----\nwindow.TWEAKS = /*EDITMODE-BEGIN*/' + JSON.stringify(activeTweaks, null, 2) + '/*EDITMODE-END*/;';
+    // ★ "저장 누르면 바로 원상복구" 의 직접 원인이었던 부분 ★
+    // 예전에는 sendStateToIframe() (= postMessage, 비동기) 으로 보낸 직후
+    // applyTweaks() 를 동기로 호출했다. 그 시점의 iframe 안 window.TWEAKS /
+    // MARQUEE_PHOTOS 는 아직 "보내기 전" 값이라서, applyTweaks() 가 화면을
+    // 예전 내용으로 다시 그려버렸다. 사용자는 저장을 누르는 순간 미리보기가
+    // 되돌아가는 것을 보고, 그 되돌아간 DOM 이 그대로 파일에 저장됐다.
+    //
+    // iframe 은 같은 출처이므로 전역 변수를 직접(=동기로) 넣어준 뒤 다시 그린다.
+    let appliedSynchronously = false;
+    try {
+      const w = iframe.contentWindow;
+      if (w) {
+        w.TWEAKS = Object.assign({}, w.TWEAKS, activeTweaks);
+        if (state.images) w.HERO_IMAGES = Object.assign({}, w.HERO_IMAGES, state.images);
+        if (state.portfolio) w.PORTFOLIO_ITEMS = state.portfolio;
+        if (state.marqueePhotos) w.MARQUEE_PHOTOS = state.marqueePhotos;
+        if (typeof w.applyTweaks === 'function') { w.applyTweaks(); appliedSynchronously = true; }
+        if (typeof w.renderPortfolio === 'function') w.renderPortfolio();
+      }
+    } catch (e) {
+      console.warn('동기 반영 실패, postMessage 로 대체합니다:', e);
     }
+    if (!appliedSynchronously) sendStateToIframe();
+    markIframeApplied(); // 방금 동기로 반영했으므로 DOM 은 최신이다
+
+    // 미리보기를 불러온 뒤 파일이 밖에서 바뀌었으면 알려만 준다.
+    // 예전에는 여기서 confirm() 으로 저장을 막았는데, 대화상자를 닫으면
+    // 저장이 조용히 취소되면서 "저장했다는데 반영이 안 된다"로 보였다.
+    // 저장 자체를 막지 않고 경고만 띄운다.
+    if (await fileChangedSinceLoad(pageName)) {
+      showNotification(
+        `⚠️ <b>${pageName}</b> 이 미리보기를 불러온 뒤 밖에서 변경되었습니다.<br>` +
+        `지금 저장하면 화면 내용이 기준이 됩니다. (외부 변경분이 필요하면 F5 후 다시 편집하세요)`,
+        'warning'
+      );
+    }
+
+    const rawHtml = sanitizeExportedHtml('<!doctype html>\n' + iframe.contentDocument.documentElement.outerHTML);
+
+    // activeTweaks 는 위에서 이미 계산해 두었다 (동기 반영에도 같은 값을 썼다)
+    const doc = new DOMParser().parseFromString(rawHtml, 'text/html');
+
+    // 1. DOM 노드의 실제 HTML 텍스트에도 수정한 최신 tweaks 대입 (스냅샷 고정)
+    const setText = (sel, val) => {
+      if (!val) return;
+      doc.querySelectorAll(sel).forEach(el => { el.textContent = val; });
+    };
+    setText('[data-bind="brandName"]', activeTweaks.brandName);
+    setText('[data-bind="phone"]', activeTweaks.phone);
+    setText('[data-hero-copy]', activeTweaks.heroHeadline);
+    setText('[data-hero-sub]', activeTweaks.heroSub);
+    setText('[data-gate-label="demo"]', activeTweaks.gateDemoLabel);
+    setText('[data-gate-label="interior"]', activeTweaks.gateInteriorLabel);
+    setText('.gate-card[data-gate="demo"] .gate-desc', activeTweaks.gateDemoDesc);
+    setText('.gate-card[data-gate="interior"] .gate-desc', activeTweaks.gateInteriorDesc);
+    setText('.cost-sec-title, .cost-header h2', activeTweaks.costTitle);
+    setText('.cost-sec-lead, .cost-header p', activeTweaks.costLead);
+    setText('#contact .sec-title, [data-bind="contactTitle"]', activeTweaks.contactTitle);
+    setText('#contact .sec-sub, [data-bind="contactSub"]', activeTweaks.contactSub);
+    setText('footer .company-name, [data-bind="footerCompany"]', activeTweaks.footerCompany);
+    setText('footer .company-info, [data-bind="footerInfo"]', activeTweaks.footerInfo);
+
+    // 2. Head 내 상단 window.TWEAKS 스크립트만 정확하게 찾아 JSON 업데이트 (/*EDITMODE-BEGIN*/ 마커 검색)
+    let tweaksScript = Array.from(doc.querySelectorAll('head script'))
+      .find(s => s.textContent.includes('/*EDITMODE-BEGIN*/') || s.textContent.includes('window.TWEAKS'));
+    
+    const tweaksCode = '// ---- Tweakable defaults ----\nwindow.TWEAKS = /*EDITMODE-BEGIN*/' + JSON.stringify(activeTweaks, null, 2) + '/*EDITMODE-END*/;';
+
+    if (tweaksScript) {
+      tweaksScript.textContent = tweaksCode;
+    } else {
+      tweaksScript = doc.createElement('script');
+      tweaksScript.textContent = tweaksCode;
+      const head = doc.querySelector('head') || doc.documentElement;
+      head.insertBefore(tweaksScript, head.firstChild);
+    }
+
+    // 3. index.html의 포트폴리오 및 무빙 갤러리 script 업데이트
     if (pageName === 'index.html') {
       let dataScript = doc.querySelector('#saved-page-data');
       if (!dataScript) {
@@ -964,6 +1627,7 @@
       ];
       dataScript.textContent = lines.join('\n');
     }
+
     const finalHtml = '<!doctype html>\n' + doc.documentElement.outerHTML;
 
     try {
@@ -972,7 +1636,41 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ page: pageName, html: finalHtml })
       });
-      return await res.json();
+      const result = await res.json();
+
+      // 4. 반대쪽 페이지(interior.html 등)의 TWEAKS도 최신 브랜드명/전화번호로 함께 동기화
+      const otherPage = pageName === 'index.html' ? 'interior.html' : 'index.html';
+      try {
+        const otherResp = await fetch(otherPage);
+        if (otherResp.ok) {
+          let otherHtml = await otherResp.text();
+          const otherDoc = new DOMParser().parseFromString(otherHtml, 'text/html');
+          let otherTweaksScript = Array.from(otherDoc.querySelectorAll('head script'))
+            .find(s => s.textContent.includes('/*EDITMODE-BEGIN*/') || s.textContent.includes('window.TWEAKS'));
+          if (otherTweaksScript) {
+            const otherActiveTweaks = Object.assign({}, state.tweaks);
+            if (otherPage === 'interior.html' && state.tweaks.interiorAccent) {
+              otherActiveTweaks.accent = state.tweaks.interiorAccent;
+            }
+            otherTweaksScript.textContent = '// ---- Tweakable defaults ----\nwindow.TWEAKS = /*EDITMODE-BEGIN*/' + JSON.stringify(otherActiveTweaks, null, 2) + '/*EDITMODE-END*/;';
+            const updatedOtherHtml = '<!doctype html>\n' + otherDoc.documentElement.outerHTML;
+            await fetch('/api/save-page', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ page: otherPage, html: updatedOtherHtml })
+            });
+          }
+        }
+      } catch (errOther) {
+        console.warn('Other page sync skipped:', errOther);
+      }
+
+      // 우리가 방금 저장해서 파일이 바뀐 것이므로 기준값을 갱신한다.
+      // (안 하면 다음 저장 때 "밖에서 바뀌었다"는 경고가 매번 뜬다)
+      await rememberFileSignature(pageName);
+      await rememberFileSignature(otherPage);
+
+      return result;
     } catch (e) {
       return { success: false, error: '서버 미연결 (node server.js가 켜져 있는지 확인하세요)' };
     }
@@ -1089,6 +1787,9 @@
       setTimeout(() => toast.remove(), 300);
     }, 2800);
   }
+
+  window.renderMarqueeManager = renderMarqueeManager;
+  window.renderPortfolioManager = renderPortfolioManager;
 
   document.addEventListener('DOMContentLoaded', init);
 })();

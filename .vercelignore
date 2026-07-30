@@ -2,5 +2,4 @@
 *.gs
 *.srcmap.json
 .thumbnail.jpg
-design_handoff_onestop_landing/
 export_dist.bat

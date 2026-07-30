@@ -3,11 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/jpeg" href="logo.jpg" />
+  <link rel="shortcut icon" type="image/jpeg" href="logo.jpg" />
+  <link rel="apple-touch-icon" href="logo.jpg" />
   <title>원스톱 — 웹사이트 실시간 미리보기 관리자 프로그램</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" rel="stylesheet">
   <link rel="stylesheet" href="admin.css" />
+  <script>
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => {
+        p.classList.remove('active');
+        p.style.setProperty('display', 'none', 'important');
+      });
+      const btn = document.querySelector(`.tab-item[data-tab="${tabId}"]`);
+      if (btn) btn.classList.add('active');
+      const pane = document.getElementById(tabId);
+      if (pane) {
+        pane.classList.add('active');
+        pane.style.setProperty('display', 'flex', 'important');
+        pane.style.setProperty('visibility', 'visible', 'important');
+        pane.style.setProperty('opacity', '1', 'important');
+      }
+      if (tabId === 'tab-marquee' && window.renderMarqueeManager) {
+        window.renderMarqueeManager();
+      } else if (tabId === 'tab-portfolio' && window.renderPortfolioManager) {
+        window.renderPortfolioManager();
+      }
+    }
+  </script>
 </head>
 <body>
   <div class="admin-app">
@@ -15,7 +41,7 @@
     <header class="admin-header">
       <div class="header-left">
         <div class="admin-logo" style="display:flex; align-items:center; gap:8px;">
-          <img src="design_handoff_onestop_landing/로고.jpeg" alt="원스톱 로고" style="height:32px; width:auto; border-radius:6px; object-fit:contain;" />
+          <img src="logo.jpg" alt="원스톱 로고" style="height:32px; width:auto; border-radius:6px; object-fit:contain;" />
           <span class="logo-title" style="font-weight:800; font-size:15px; color:#FFF;">원스톱 철거 인테리어</span>
           <span class="badge" style="background:#F59E0B; color:#000; font-weight:800;">Live Studio</span>
         </div>
@@ -80,35 +106,35 @@
       <!-- Left: Editor Control Panel -->
       <aside class="editor-sidebar">
         <nav class="sidebar-tabs">
-          <button class="tab-item active" data-tab="tab-brand">
+          <button class="tab-item active" data-tab="tab-brand" onclick="switchTab('tab-brand')">
             <span class="tab-icon">🎨</span>
             <span class="tab-label">기본 정보 & 디자인</span>
           </button>
-          <button class="tab-item" data-tab="tab-google-sheet">
+          <button class="tab-item" data-tab="tab-google-sheet" onclick="switchTab('tab-google-sheet')">
             <span class="tab-icon">📊</span>
             <span class="tab-label">구글 시트 연동</span>
           </button>
-          <button class="tab-item" data-tab="tab-gate">
+          <button class="tab-item" data-tab="tab-gate" onclick="switchTab('tab-gate')">
             <span class="tab-icon">🚪</span>
             <span class="tab-label">게이트 (철거/인테리어)</span>
           </button>
-          <button class="tab-item" data-tab="tab-hero">
+          <button class="tab-item" data-tab="tab-hero" onclick="switchTab('tab-hero')">
             <span class="tab-icon">🖼️</span>
             <span class="tab-label">메인 비주얼 (Hero)</span>
           </button>
-          <button class="tab-item" data-tab="tab-portfolio">
+          <button class="tab-item" data-tab="tab-portfolio" onclick="switchTab('tab-portfolio')">
             <span class="tab-icon">📸</span>
             <span class="tab-label">포트폴리오 사진</span>
           </button>
-          <button class="tab-item" data-tab="tab-marquee">
+          <button class="tab-item" data-tab="tab-marquee" onclick="switchTab('tab-marquee')">
             <span class="tab-icon">🎠</span>
             <span class="tab-label">무빙 갤러리 관리</span>
           </button>
-          <button class="tab-item" data-tab="tab-estimate">
+          <button class="tab-item" data-tab="tab-estimate" onclick="switchTab('tab-estimate')">
             <span class="tab-icon">💰</span>
             <span class="tab-label">투명 견적 & 서비스</span>
           </button>
-          <button class="tab-item" data-tab="tab-contact">
+          <button class="tab-item" data-tab="tab-contact" onclick="switchTab('tab-contact')">
             <span class="tab-icon">📞</span>
             <span class="tab-label">상담 폼 & 푸터</span>
           </button>
@@ -377,12 +403,39 @@
           <div class="tab-pane" id="tab-portfolio">
             <div class="panel-card">
               <div class="card-header-flex">
-                <h3 class="card-title">⚡ 갤러리 사진 바로바로 등록</h3>
+                <h3 class="card-title">⚡ 갤러리 시공 사진 관리</h3>
                 <button class="action-btn primary sm" id="btn-add-portfolio">
-                  ➕ 새 시공 사진 추가
+                  ➕ 빈 카드 1개 추가
                 </button>
               </div>
-              <p class="card-subtitle">사진을 클릭/드래그하여 업로드하고, <b>사진 밑 글씨(제목, 평수, 코멘트/후기)</b>를 언제든 자유롭게 수정하세요.</p>
+              <p class="card-subtitle">사진을 클릭/드래그하여 업로드하고, <b>사진 밑 글씨(제목, 평수, 코멘트/후기)</b>를 자유롭게 수정하세요.</p>
+
+              <!-- 📸 시공 사진 여러 장 한 번에 털어 넣기 드롭존 -->
+              <div class="batch-upload-dropzone" id="batch-upload-dropzone" style="margin-bottom:20px; padding:22px; border:2px dashed #38BDF8; border-radius:14px; background:rgba(56,189,248,0.06); text-align:center; transition:all 0.3s ease;">
+                <div style="font-size:32px; margin-bottom:6px;">📸</div>
+                <h4 style="margin:0 0 6px 0; color:#38BDF8; font-size:16.5px; font-weight:800;">시공 사진 여러 장 한 번에 자동 털어넣기 (다중 선택)</h4>
+                <p style="margin:0 0 14px 0; color:var(--admin-text-sub); font-size:12.5px; line-height:1.6;">
+                  컴퓨터의 사진 파일 여러 장을 <b>한 번에 선택(Ctrl 또는 Shift 키를 누르고 여러 개 클릭)</b>하거나<br/> 
+                  이 사각형 박스 안으로 <b>드래그 앤 드롭</b>해 넣으시면 갤러리 카드들에 <b>자동으로 순서대로 쫙 배정</b>됩니다!
+                </p>
+                <label class="action-btn accent-gradient" style="display:inline-flex; align-items:center; gap:8px; cursor:pointer; font-weight:800; padding:11px 26px; font-size:14px;">
+                  📂 시공 사진 수십 장 한 번에 선택하기 (다중 선택)
+                  <input type="file" id="batch-file-input" accept="image/*" multiple style="display:none;" />
+                </label>
+              </div>
+
+              <!-- ✏️ 포트폴리오 글씨 한 번에 일괄 적용 패널 -->
+              <div class="batch-text-panel" style="margin-bottom:20px; padding:16px 20px; border:1px solid rgba(56,189,248,0.3); border-radius:12px; background:rgba(30,41,59,0.7);">
+                <h4 style="margin:0 0 10px 0; color:#38BDF8; font-size:14px; font-weight:800;">✏️ 시공 사진 글씨(제목·평수·코멘트) 한 번에 일괄 변경하기</h4>
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1.5fr auto; gap:10px; align-items:center;">
+                  <input type="text" id="batch-inp-ttl" class="form-control" placeholder="공통 제목 (예: 상가 리모델링)" style="font-size:12px;" />
+                  <input type="text" id="batch-inp-sq" class="form-control" placeholder="공통 평수 (예: 30평대 · 전체)" style="font-size:12px;" />
+                  <input type="text" id="batch-inp-comment" class="form-control" placeholder="공통 코멘트 (예: 100% 직영 시공 완공)" style="font-size:12px;" />
+                  <button class="action-btn primary sm" id="btn-batch-apply-text" style="font-weight:800; white-space:nowrap; padding:8px 16px;">
+                    ✨ 전체 글씨 일괄 적용
+                  </button>
+                </div>
+              </div>
 
               <div class="portfolio-manager-list" id="portfolio-list-container">
                 <!-- Dynamic Portfolio Item Controls -->
@@ -393,16 +446,61 @@
           <!-- Tab: Moving Marquee Gallery Section -->
           <div class="tab-pane" id="tab-marquee">
             <div class="panel-card">
-              <div class="card-header-flex">
-                <h3 class="card-title">🎠 1,500건 무빙 갤러리 사진 관리</h3>
-                <button class="action-btn primary sm" id="btn-add-marquee">
-                  ➕ 무빙 사진 추가
+              <div class="card-header-flex" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                <h3 class="card-title" style="margin:0; font-size:18px; color:#F59E0B;">🎠 3D 무빙 갤러리 사진 관리</h3>
+                <button class="action-btn highlight sm" id="btn-add-marquee" style="background:#F59E0B; color:#000; font-weight:800; padding:8px 16px; font-size:13px;">
+                  ➕ 무빙 사진 1개 직접 추가
                 </button>
               </div>
-              <p class="card-subtitle">메인 랜딩페이지의 2줄 무한 무빙 갤러리에 흘러가는 **모든 시공 사진과 제목, 뱃지**를 직접 추가·수정·삭제하실 수 있습니다.</p>
+              <p class="card-subtitle">메인 화면의 무한 3D 무빙 갤러리에 흘러가는 <b>모든 시공 사진과 제목, 뱃지</b>를 직접 관리하세요.</p>
 
-              <div class="portfolio-manager-list" id="marquee-list-container">
-                <!-- Dynamic Marquee Photo Item Controls -->
+              <!-- 🎠 무빙 갤러리 수십 장 한 번에 털어 넣기 드롭존 -->
+              <div class="batch-upload-dropzone" id="marquee-batch-dropzone" style="margin-bottom:20px; padding:22px; border:2px dashed #F59E0B; border-radius:14px; background:rgba(245,158,11,0.08); text-align:center; transition:all 0.3s ease;">
+                <div style="font-size:34px; margin-bottom:6px;">🎠</div>
+                <h4 style="margin:0 0 6px 0; color:#F59E0B; font-size:17px; font-weight:800;">무빙 갤러리 사진 여러 장 한 번에 등록하기 (다중 선택)</h4>
+                <p style="margin:0 0 16px 0; color:var(--admin-text-sub); font-size:13px; line-height:1.6;">
+                  사진 수십 장을 <b>한 번에 선택(Ctrl/Shift 누르고 복수 선택)</b>하거나 <b>드래그 앤 드롭</b>하시면 3D 무빙 갤러리에 <b>자동으로 순서대로 등록</b>됩니다!
+                </p>
+                <label class="action-btn highlight" style="display:inline-flex; align-items:center; gap:8px; cursor:pointer; font-weight:800; padding:12px 28px; font-size:14px; background:linear-gradient(135deg, #F59E0B, #D97706); color:#000; box-shadow:0 4px 15px rgba(245,158,11,0.3);">
+                  📂 무빙 사진 여러 장 한 번에 선택하기 (다중 선택)
+                  <input type="file" id="marquee-batch-file-input" accept="image/*" multiple style="display:none;" />
+                </label>
+              </div>
+
+              <!-- ✏️ 무빙 갤러리 글씨 한 번에 일괄 적용 패널 -->
+              <div class="batch-text-panel" style="margin-bottom:24px; padding:18px 22px; border:1px solid rgba(245,158,11,0.4); border-radius:14px; background:rgba(30,41,59,0.85); box-shadow:0 4px 15px rgba(0,0,0,0.2);">
+                <h4 style="margin:0 0 12px 0; color:#F59E0B; font-size:14.5px; font-weight:800;">✏️ 무빙 갤러리 글씨(제목·뱃지) 한 번에 일괄 변경하기</h4>
+                <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap:12px; align-items:center;">
+                  <input type="text" id="marquee-batch-inp-ttl" class="form-control" placeholder="공통 제목 (예: 감성 공간 리모델링)" style="font-size:12.5px; padding:9px 12px;" />
+                  <input type="text" id="marquee-batch-inp-badge" class="form-control" placeholder="공통 뱃지 (예: STORE / OFFICE)" style="font-size:12.5px; padding:9px 12px;" />
+                  <button class="action-btn highlight sm" id="btn-marquee-batch-apply-text" style="font-weight:800; white-space:nowrap; padding:10px 20px; background:#F59E0B; color:#000; font-size:13px;">
+                    ✨ 무빙 글씨 일괄 적용
+                  </button>
+                </div>
+              </div>
+
+              <div class="portfolio-manager-list" id="marquee-list-container" style="display:flex; flex-direction:column; gap:14px;">
+                <div class="portfolio-editor-card" style="background:var(--admin-card-bg); border:1px solid var(--admin-card-border); border-radius:14px; padding:14px; margin-bottom:12px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span style="font-weight:900; font-size:12.5px; color:#F59E0B;">무빙 갤러리 #1</span>
+                    <button class="action-btn secondary sm btn-del-marquee" style="color:#EF4444; padding:3px 10px; font-size:11.5px; font-weight:800;">🗑️ 삭제</button>
+                  </div>
+                  <div style="display:grid; grid-template-columns:110px 1fr; gap:14px; align-items:center;">
+                    <div class="image-upload-box mq-thumb-box" style="height:85px; margin:0; cursor:pointer; border-radius:10px; overflow:hidden; border:1px dashed #F59E0B; position:relative;">
+                      <div class="mq-preview-inner" style="width:100%; height:100%; background-size:cover; background-position:center; display:flex; align-items:center; justify-content:center; background-image:url('https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=800&q=80');"></div>
+                    </div>
+                    <div>
+                      <div class="form-group" style="margin-bottom:8px;">
+                        <label style="font-size:11px; color:var(--admin-text-sub); display:block; margin-bottom:3px;">사진 제목 / 설명</label>
+                        <input type="text" class="form-control sm mq-inp-title" value="상가 철거 후 미니멀 감성 카페 완공" style="font-size:12px; padding:6px 10px;" />
+                      </div>
+                      <div class="form-group" style="margin:0;">
+                        <label style="font-size:11px; color:var(--admin-text-sub); display:block; margin-bottom:3px;">태그 뱃지 문구 (우측 상단 뱃지)</label>
+                        <input type="text" class="form-control sm mq-inp-badge" value="STORE" style="font-size:12px; padding:6px 10px;" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -493,6 +591,6 @@
     </main>
   </div>
 
-  <script src="admin.js"></script>
+  <script src="admin.js?v=20260727_18"></script>
 </body>
 </html>
