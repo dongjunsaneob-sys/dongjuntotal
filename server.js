@@ -54,7 +54,7 @@ function syncStaticAssetsToDist(distDir) {
     fs.copyFileSync(src, dest);
   };
 
-  ['vercel.json', 'package.json', 'responsive.css',
+  ['vercel.json', 'package.json', 'responsive.css', 'robots.txt', 'sitemap.xml',
    'demolition.gif', 'interior.gif', 'structure_demolition.gif', 'logo.jpg', 'favicon.ico',
    'logo_video.mp4', 'promo_video.mp4'].forEach(f => {
     copyIfNewer(path.join(PUBLIC_DIR, f), path.join(distDir, f));
@@ -66,6 +66,26 @@ function syncStaticAssetsToDist(distDir) {
     if (!fs.existsSync(assetDest)) fs.mkdirSync(assetDest, { recursive: true });
     fs.readdirSync(assetSrc).forEach(file => {
       copyIfNewer(path.join(assetSrc, file), path.join(assetDest, file));
+    });
+  }
+
+  // interior.html 등에서 쓰는 실제 시공 사진(photos/interior/*.jpg)을 dist/로 동기화
+  const photosSrc = path.join(PUBLIC_DIR, 'photos', 'interior');
+  const photosDest = path.join(distDir, 'photos', 'interior');
+  if (fs.existsSync(photosSrc)) {
+    if (!fs.existsSync(photosDest)) fs.mkdirSync(photosDest, { recursive: true });
+    fs.readdirSync(photosSrc).forEach(file => {
+      copyIfNewer(path.join(photosSrc, file), path.join(photosDest, file));
+    });
+  }
+
+  // floor-demolition.html 등에서 쓰는 실제 현장 영상(videos/*.mp4)을 dist/로 동기화
+  const videosSrc = path.join(PUBLIC_DIR, 'videos');
+  const videosDest = path.join(distDir, 'videos');
+  if (fs.existsSync(videosSrc)) {
+    if (!fs.existsSync(videosDest)) fs.mkdirSync(videosDest, { recursive: true });
+    fs.readdirSync(videosSrc).forEach(file => {
+      copyIfNewer(path.join(videosSrc, file), path.join(videosDest, file));
     });
   }
 
@@ -108,7 +128,7 @@ function buildDistFiles() {
   const distDir = path.join(PUBLIC_DIR, 'dist');
   if (!fs.existsSync(distDir)) fs.mkdirSync(distDir, { recursive: true });
 
-  ['index.html', 'interior.html'].forEach(page => {
+  ['index.html', 'interior.html', 'floor-demolition.html', 'survey.html'].forEach(page => {
     const srcPath = path.join(PUBLIC_DIR, page);
     if (fs.existsSync(srcPath)) {
       const raw = fs.readFileSync(srcPath, 'utf8');
@@ -225,7 +245,7 @@ const server = http.createServer((req, res) => {
     req.on('end', () => {
       try {
         const data = JSON.parse(body);
-        const allowedPages = ['index.html', 'interior.html'];
+        const allowedPages = ['index.html', 'interior.html', 'floor-demolition.html', 'survey.html'];
         if (!allowedPages.includes(data.page)) {
           throw new Error('허용되지 않은 파일입니다: ' + data.page);
         }

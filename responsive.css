@@ -365,3 +365,18 @@ img, video, svg, iframe { max-width: 100%; }
   .gate-title { font-size: 27px !important; }
   .pf-item .pf-comment { display: none !important; }
 }
+
+/* ==========================================================================
+   7) 03. 바닥철거 gate-card — 가독성 백업 (인라인 스타일 유실 대비)
+   ========================================================================== */
+.gate-card.floor{ background: #14151A !important; border-color: #14151A !important; }
+.gate-floor-bg{ position:absolute; inset:0; z-index:0; pointer-events:none; opacity:0.38; }
+.gate-floor-bg::after{
+  content:""; position:absolute; inset:0;
+  background: linear-gradient(180deg, rgba(20,21,26,.35) 0%, rgba(20,21,26,.9) 100%);
+}
+.gate-card.floor .gate-tag{ background: rgba(255,255,255,0.12) !important; color: #fff !important; }
+.gate-card.floor .gate-title{ color: #fff !important; }
+.gate-card.floor .gate-desc{ color: rgba(255,255,255,0.72) !important; }
+.gate-card.floor .gate-arrow{ background: #34D399 !important; color: #0B0C0F !important; }
+.gate-card.floor:hover{ border-color: #34D399 !important; }

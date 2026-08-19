@@ -2,6 +2,10 @@
   "name": "dongjuntotal",
   "version": "1.0.0",
   "private": true,
+  "scripts": {
+    "build": "node server.js --build-dist",
+    "start": "node server.js"
+  },
   "engines": {
     "node": ">=18"
   }

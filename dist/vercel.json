@@ -4,6 +4,8 @@
   "trailingSlash": false,
   "rewrites": [
     { "source": "/", "destination": "/index.html" },
-    { "source": "/interior", "destination": "/interior.html" }
+    { "source": "/interior", "destination": "/interior.html" },
+    { "source": "/floor-demolition", "destination": "/floor-demolition.html" },
+    { "source": "/survey", "destination": "/survey.html" }
   ]
 }
