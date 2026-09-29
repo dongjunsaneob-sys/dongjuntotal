@@ -54,7 +54,7 @@ function syncStaticAssetsToDist(distDir) {
     fs.copyFileSync(src, dest);
   };
 
-  ['vercel.json', 'package.json', 'responsive.css', 'robots.txt', 'sitemap.xml',
+  ['vercel.json', 'responsive.css', 'typography.css', 'robots.txt', 'sitemap.xml',
    'demolition.gif', 'interior.gif', 'structure_demolition.gif', 'logo.jpg', 'favicon.ico',
    'logo_video.mp4', 'promo_video.mp4'].forEach(f => {
     copyIfNewer(path.join(PUBLIC_DIR, f), path.join(distDir, f));
@@ -128,7 +128,7 @@ function buildDistFiles() {
   const distDir = path.join(PUBLIC_DIR, 'dist');
   if (!fs.existsSync(distDir)) fs.mkdirSync(distDir, { recursive: true });
 
-  ['index.html', 'interior.html', 'floor-demolition.html', 'survey.html'].forEach(page => {
+  ['index.html', 'interior.html', 'floor-demolition.html', 'survey.html', 'waste.html'].forEach(page => {
     const srcPath = path.join(PUBLIC_DIR, page);
     if (fs.existsSync(srcPath)) {
       const raw = fs.readFileSync(srcPath, 'utf8');
@@ -166,15 +166,20 @@ function writeDeployStatus(status) {
 function deployToVercelInBackground() {
   const distDir = path.join(PUBLIC_DIR, 'dist');
   const startedAt = Date.now();
+  
+  if (process.env.ENABLE_VERCEL_DEPLOY !== 'true') {
+    const msg = '로컬 파일 수정 전용 모드입니다. 웹사이트 외부 업로드를 건너뜁니다.';
+    console.log('\n💾 [로컬 저장 완료] 파일이 project/ 및 project/dist/ 에 정상 저장되었습니다. (웹사이트 업로드 제외)');
+    writeDeployStatus({ state: 'skipped', startedAt, finishedAt: Date.now(), message: msg, log: '' });
+    return;
+  }
+
   console.log('\n🚀 [Vercel 자동 배포 진행 중...] 수정사항을 라이브 서버에 반영하고 있습니다...');
   writeDeployStatus({ state: 'pending', startedAt, finishedAt: null, message: '배포 진행 중', log: '' });
 
-  // dist/ 에 프로젝트 연결 파일(.vercel/project.json)이 없으면 vercel CLI가 어느
-  // 프로젝트에 배포할지 알 수 없어 엉뚱한 프로젝트를 새로 만들거나 실패할 수 있다.
-  // 배포를 시도하기 전에 반드시 확인한다.
   const linkFile = path.join(distDir, '.vercel', 'project.json');
   if (!fs.existsSync(linkFile)) {
-    const msg = 'dist/.vercel/project.json 이 없어 배포를 건너뜁니다. (어느 Vercel 프로젝트에 배포할지 연결되어 있지 않음)';
+    const msg = 'dist/.vercel/project.json 이 없어 배포를 건너뜁니다.';
     console.error('❌ [Vercel 자동 배포 건너뜀]:', msg);
     writeDeployStatus({ state: 'error', startedAt, finishedAt: Date.now(), message: msg, log: '' });
     return;
@@ -188,7 +193,6 @@ function deployToVercelInBackground() {
       if (log) console.error(log);
       writeDeployStatus({ state: 'error', startedAt, finishedAt, message: err.message, log });
     } else {
-      // 성공 시 vercel CLI는 마지막 줄에 배포된 URL을 출력한다
       const urlMatch = log.match(/https:\/\/\S+\.vercel\.app\S*/);
       console.log('✅ [Vercel 자동 배포 완료] 라이브 웹사이트(도메인)에 수정사항이 즉시 반영되었습니다!\n');
       writeDeployStatus({ state: 'success', startedAt, finishedAt, message: '배포 완료', url: urlMatch ? urlMatch[0] : null, log });
@@ -196,13 +200,10 @@ function deployToVercelInBackground() {
   });
 }
 
-const server = http.createServer((req, res) => {
+
+function requestHandler(req, res) {
   let reqUrl = req.url.split('?')[0];
 
-  // API Endpoint: 관리자 화면이 실제 배포 결과(성공/실패)를 물어보는 곳.
-  // 저장 버튼을 누른 직후의 "배포 시작됨" 메시지는 아직 결과를 모르는 낙관적 안내일
-  // 뿐이므로, 관리자 화면은 저장 후 이 엔드포인트를 몇 초 간격으로 확인해 실제
-  // 성공/실패를 다시 보여준다.
   if (req.method === 'GET' && reqUrl === '/api/deploy-status') {
     fs.readFile(DEPLOY_STATUS_PATH, 'utf8', (err, content) => {
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
@@ -212,7 +213,12 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // API Endpoint: Save directly to dist/ directory when user clicks "배포용 HTML 내보내기"
+  // 네이버 블로그 RSS → 현장 작업사진 목록 (배포 시에는 Vercel의 api/blog-posts.js가 같은 역할)
+  if (req.method === 'GET' && reqUrl === '/api/blog-posts') {
+    require('./api/blog-posts.js')(req, res);
+    return;
+  }
+
   if (req.method === 'POST' && reqUrl === '/api/save-dist') {
     let body = '';
     req.on('data', chunk => { body += chunk.toString(); });
@@ -229,7 +235,7 @@ const server = http.createServer((req, res) => {
         deployToVercelInBackground();
 
         res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
-        res.end(JSON.stringify({ success: true, message: 'dist/ 폴더로 배포용 최적화 파일이 저장되었으며, Vercel 자동 배포가 시작되었습니다.' }));
+        res.end(JSON.stringify({ success: true, message: 'dist/ 폴더로 배포용 최적화 파일이 저장되었습니다.' }));
       } catch (e) {
         res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
         res.end(JSON.stringify({ success: false, error: e.message }));
@@ -238,29 +244,23 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // API Endpoint: 직접 연 index.html/interior.html에서, 또는 admin에서 "💾 저장하기"를 눌렀을 때
   if (req.method === 'POST' && reqUrl === '/api/save-page') {
     let body = '';
     req.on('data', chunk => { body += chunk.toString(); });
     req.on('end', () => {
       try {
         const data = JSON.parse(body);
-        const allowedPages = ['index.html', 'interior.html', 'floor-demolition.html', 'survey.html'];
+        const allowedPages = ['index.html', 'interior.html', 'floor-demolition.html', 'survey.html', 'waste.html'];
         if (!allowedPages.includes(data.page)) {
           throw new Error('허용되지 않은 파일입니다: ' + data.page);
         }
 
-        // 로컬 프로젝트 소스에는 편집 가능한 상태로 저장
         fs.writeFileSync(path.join(PUBLIC_DIR, data.page), data.html, 'utf8');
-
-        // 배포용 dist/ 폴더에 index.html, interior.html 및 모든 정적 자산을 즉시 빌드 및 동기화 저장
         buildDistFiles();
-
-        // Vercel 라이브 서버로 자동 배경 배포 실행
         deployToVercelInBackground();
 
         res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
-        res.end(JSON.stringify({ success: true, message: data.page + ' 원본 및 dist/ 배포용 파일 전체 저장 완료! Vercel 자동 배포가 시작되었습니다.' }));
+        res.end(JSON.stringify({ success: true, message: data.page + ' 원본 및 dist/ 배포용 파일 전체 저장 완료!' }));
       } catch (e) {
         res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
         res.end(JSON.stringify({ success: false, error: e.message }));
@@ -269,41 +269,76 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  let filePath = path.join(PUBLIC_DIR, decodeURIComponent(reqUrl === '/' ? '/admin.html' : reqUrl));
-  const ext = path.extname(filePath).toLowerCase();
-  const contentType = mimeTypes[ext] || 'application/octet-stream';
+  let decodedPath = reqUrl === '/' ? '/index.html' : reqUrl;
+  try {
+    decodedPath = decodeURIComponent(decodedPath);
+  } catch(e) {}
 
-  fs.readFile(filePath, (err, content) => {
-    if (err) {
-      if (err.code === 'ENOENT') {
-        res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
-        res.end('<h1>404 Not Found</h1>');
-      } else {
-        res.writeHead(500);
-        res.end('Server Error: ' + err.code);
-      }
-    } else {
-      res.writeHead(200, { 
-        'Content-Type': contentType, 
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Access-Control-Allow-Origin': '*'
-      });
-      res.end(content, 'utf-8');
+  let filePath = path.join(PUBLIC_DIR, decodedPath);
+  // 배포 사이트처럼 확장자 없는 주소(/interior, /index 등)와 폴더 주소(/)도 열리게 처리
+  if (!path.extname(filePath) && fs.existsSync(filePath + '.html')) filePath += '.html';
+  else if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) filePath = path.join(filePath, 'index.html');
+
+  fs.stat(filePath, (err, stats) => {
+    if (err || !stats.isFile()) {
+      res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end('<h1>404 Not Found</h1>');
+      return;
     }
+
+    const ext = path.extname(filePath).toLowerCase();
+    const contentType = mimeTypes[ext] || 'application/octet-stream';
+
+    res.writeHead(200, { 
+      'Content-Type': contentType, 
+      'Content-Length': stats.size,
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Access-Control-Allow-Origin': '*'
+    });
+
+    const stream = fs.createReadStream(filePath);
+    stream.on('error', () => {
+      if (!res.headersSent) {
+        res.writeHead(500);
+        res.end('Server Error');
+      }
+    });
+    stream.pipe(res);
   });
-});
+}
 
-server.listen(PORT, () => {
-  console.log('\n====================================================');
-  console.log(' ⚡ 원스톱 웹사이트 실시간 관리자 프로그램 가동 중!');
-  console.log('====================================================');
-  console.log(` • 브라우저 주소 : http://localhost:${PORT}/admin.html`);
-  console.log(' • 편집 상태     : 실시간 미리보기 & 3D 모션 연동 100%');
-  console.log('====================================================');
-  console.log(' 이 창을 켜두신 상태에서 웹 편집을 진행하세요.\n');
+function startServerOnFreePort(handler, ports) {
+  function tryPort(index) {
+    if (index >= ports.length) {
+      console.error('❌ 사용 가능한 포트를 찾지 못했습니다.');
+      return;
+    }
+    const port = ports[index];
+    const srv = http.createServer(handler);
+    srv.on('error', (err) => {
+      if (err.code === 'EADDRINUSE' || err.code === 'EACCES') {
+        console.log(`⚠️ 포트 ${port} 사용 불가 (${err.code}). 다음 포트로 재시도합니다...`);
+        tryPort(index + 1);
+      } else {
+        console.error('서버 오류:', err);
+      }
+    });
 
-  const openCmd = process.platform === 'win32' 
-    ? `start http://localhost:${PORT}/admin.html` 
-    : `open http://localhost:${PORT}/admin.html`;
-  exec(openCmd);
-});
+    srv.listen(port, '0.0.0.0', () => {
+      console.log('\n====================================================');
+      console.log(' ⚡ 원스톱 웹사이트 실시간 서버가 성공적으로 가동되었습니다!');
+      console.log('====================================================');
+      console.log(` • 메인 사이트   : http://localhost:${port}/index.html`);
+      console.log(` • 실시간 관리자 : http://localhost:${port}/admin.html`);
+      console.log('====================================================');
+      console.log(' 이 창을 켜두신 상태에서 웹 편집을 진행하세요.\n');
+    });
+  }
+
+  tryPort(0);
+}
+
+const PREFERRED_PORTS = [8000, 8888, 9000, 3000, 5000];
+startServerOnFreePort(requestHandler, PREFERRED_PORTS);
+
+

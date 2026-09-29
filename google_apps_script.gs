@@ -56,7 +56,8 @@ function doPost(e) {
 
     // 4. 카테고리별(철거 / 인테리어 / 통합) 개별 시트 자동 분리 저장
     var categorySheetName = serviceType;
-    if (categorySheetName.indexOf('철거') !== -1) categorySheetName = '철거 견적';
+    if (categorySheetName.indexOf('폐기물') !== -1) categorySheetName = '폐기물 견적';
+    else if (categorySheetName.indexOf('철거') !== -1) categorySheetName = '철거 견적';
     else if (categorySheetName.indexOf('인테리어') !== -1) categorySheetName = '인테리어 견적';
     else categorySheetName = '통합 견적';
 
@@ -65,7 +66,7 @@ function doPost(e) {
 
     // 5. 구글 이메일(Gmail)로 실시간 신청 알림 전송
     try {
-      var recipientEmail = Session.getActiveUser().getEmail();
+      var recipientEmail = Session.getEffectiveUser().getEmail() || Session.getActiveUser().getEmail();
       if (recipientEmail) {
         var subject = '[원스톱 견적 접수] ' + name + ' 고객님의 신규 문의가 도착했습니다.';
         var bodyText = '🚀 원스톱 웹사이트에서 새로운 견적 문의가 접수되었습니다!\n\n' +
@@ -77,7 +78,19 @@ function doPost(e) {
                        '• 예상 평수: ' + area + '\n' +
                        '• 문의 내용: ' + message + '\n\n' +
                        '📊 구글 시트에서 전체 접수 목록 확인하기:\n' + ss.getUrl();
-        MailApp.sendEmail(recipientEmail, subject, bodyText);
+        // 폐기물 사진 견적: 사진(base64)을 메일 첨부파일로 붙인다 (최대 5장)
+        var attachments = [];
+        if (data.photos && data.photos.length) {
+          for (var i = 0; i < data.photos.length && i < 5; i++) {
+            var ph = data.photos[i];
+            if (!ph || !ph.data) continue;
+            attachments.push(Utilities.newBlob(Utilities.base64Decode(ph.data), 'image/jpeg', ph.name || ('photo_' + (i + 1) + '.jpg')));
+          }
+        }
+        if (serviceType.indexOf('폐기물') !== -1) {
+          subject = '[폐기물 사진견적] ' + name + ' / ' + phone + (data.wasteDemo === '예, 철거도 필요' ? ' / 철거 동반' : '') + ' (사진 ' + attachments.length + '장)';
+        }
+        MailApp.sendEmail({ to: recipientEmail, subject: subject, body: bodyText, attachments: attachments });
       }
     } catch (mailErr) {}
 
