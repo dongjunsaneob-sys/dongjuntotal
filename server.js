@@ -55,7 +55,7 @@ function syncStaticAssetsToDist(distDir) {
   };
 
   ['vercel.json', 'responsive.css', 'typography.css', 'robots.txt', 'sitemap.xml',
-   'demolition.gif', 'interior.gif', 'structure_demolition.gif', 'logo.jpg', 'favicon.ico',
+   'demolition.gif', 'interior.gif', 'structure_demolition.gif', 'logo.jpg', 'logo-256.png', 'favicon.ico',
    'logo_video.mp4', 'promo_video.mp4'].forEach(f => {
     copyIfNewer(path.join(PUBLIC_DIR, f), path.join(distDir, f));
   });
